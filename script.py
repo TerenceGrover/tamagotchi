@@ -1,6 +1,4 @@
 import pygame
-import random
-import time
 from core.graphics import Graphics
 from core.controls import Controls
 from core.states import States
@@ -26,8 +24,8 @@ def main():
     states = States()
     graphics = Graphics(screen, MATRIX_WIDTH, MATRIX_HEIGHT, PIXEL_SIZE)
 
-    # Load sprites
-    graphics.sprites = graphics.load_sprites(states.get_sprite_folder())
+    # Load initial sprites
+    graphics.set_sprites(graphics.load_sprites(states.get_sprite_folder()))
 
     # Game loop
     clock = pygame.time.Clock()
@@ -42,6 +40,17 @@ def main():
 
         # Clear the screen
         graphics.clear_screen()
+
+        # Update life stage
+        states.update_life_stage()
+
+        # Reload sprites if life stage changes
+        new_sprites = graphics.load_sprites(states.get_sprite_folder())
+        if new_sprites != graphics.sprites:
+            graphics.set_sprites(new_sprites)
+
+        # Decay stats
+        stats.decay_stats()
 
         # Handle screens
         if states.current_screen == "home_screen":
@@ -65,7 +74,6 @@ def main():
         clock.tick(FPS)
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+import time
 from PIL import Image, ImageDraw, ImageFont
 
 class Stats:
@@ -9,7 +10,24 @@ class Stats:
             "social": 50,
             "esteem": 90,
         }
-        self.font = ImageFont.truetype("assets/fonts/tamzen.ttf", 11)  # Load a small font
+        self.last_update_time = time.time()  # Track the last update
+        self.decay_rates = {
+            "food": 1,    # Decrease food by 1 unit every interval
+            "rest": 1,    # Decrease rest by 1 unit every interval
+            "social": 1,  # Decrease social by 1 unit every interval
+        }
+        self.decay_interval = 5  # Time in seconds between each decay
+        self.font = ImageFont.truetype("assets/fonts/tamzen.ttf", 11)
+
+    def decay_stats(self):
+        """
+        Decrease stats based on the defined decay interval and rates.
+        """
+        current_time = time.time()
+        if current_time - self.last_update_time >= self.decay_interval:
+            for stat in self.decay_rates:
+                self.stats[stat] = max(0, self.stats[stat] - self.decay_rates[stat])
+            self.last_update_time = current_time
 
     def text_to_matrix(self, text, width, height):
         """

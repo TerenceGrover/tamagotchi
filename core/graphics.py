@@ -32,6 +32,13 @@ class Graphics:
             raise ValueError(f"No sprites found in {folder_path}")
         return sprites
 
+    def set_sprites(self, new_sprites):
+        """
+        Update sprites and reset the sprite index.
+        """
+        self.sprites = new_sprites
+        self.current_sprite_index = 0
+
     def switch_sprite(self):
         current_time = time.time()
         if current_time - self.last_switch_time > self.switch_interval:
