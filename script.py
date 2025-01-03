@@ -4,6 +4,7 @@ import time
 from core.graphics import Graphics
 from core.controls import Controls
 from core.states import States
+from core.stats import Stats
 
 # Constants
 MATRIX_WIDTH = 64
@@ -21,17 +22,12 @@ def main():
 
     # Initialize modules
     controls = Controls()
+    stats = Stats()
     states = States()
     graphics = Graphics(screen, MATRIX_WIDTH, MATRIX_HEIGHT, PIXEL_SIZE)
-    sprite_folder = states.get_sprite_folder()
-    sprites = graphics.load_sprites(sprite_folder)
-    sprites = tuple(sprites)  # Convert to immutable tuple
 
-
-    # Game variables
-    current_sprite_index = 0
-    last_switch_time = time.time()
-    switch_interval = random.uniform(0.5, 2.0)
+    # Load sprites
+    graphics.sprites = graphics.load_sprites(states.get_sprite_folder())
 
     # Game loop
     clock = pygame.time.Clock()
@@ -47,41 +43,28 @@ def main():
         # Clear the screen
         graphics.clear_screen()
 
-        # Move sprite
-        sprite_matrix = sprites[current_sprite_index]
-        sprite_width = len(sprite_matrix[0])
-        sprite_height = len(sprite_matrix)
-        graphics.move_sprite(sprite_width, sprite_height)
-        graphics.clear_screen()
-        graphics.draw_sprite(sprite_matrix)
+        # Handle screens
+        if states.current_screen == "home_screen":
+            graphics.switch_sprite()
+            graphics.move_sprite()
+            graphics.draw_sprite()
 
-        # Check if it's time to switch the sprite
-        current_time = time.time()
-        if current_time - last_switch_time > switch_interval:
-            current_sprite_index = (current_sprite_index + 1) % len(sprites)
-            last_switch_time = current_time
-            switch_interval = random.uniform(0.5, 2.0)
+            # Transition to stats screen
+            if controls.left_button:
+                states.transition_to_screen("stats_screen")
 
-        # Ensure the current sprite is valid
-        if current_sprite_index < len(sprites):
-            sprite_matrix = sprites[current_sprite_index]
-        else:
-            print(f"Invalid sprite index: {current_sprite_index}")
-            sprite_matrix = [[(0, 0, 0) for _ in range(10)] for _ in range(10)]  # Fallback to blank sprite
+        elif states.current_screen == "stats_screen":
+            stats.render_stats_screen(graphics)
 
-
-        # Draw the current sprite
-        graphics.draw_sprite(sprite_matrix)
-
+            # Return to home screen
+            if controls.left_button:
+                states.transition_to_screen("home_screen")
 
         # Update the display
         pygame.display.flip()
         clock.tick(FPS)
 
     pygame.quit()
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":

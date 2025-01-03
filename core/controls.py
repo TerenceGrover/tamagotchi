@@ -1,27 +1,22 @@
+import time
 import pygame
 
 class Controls:
     def __init__(self):
-        self.inputs = {
-            "left": False,
-            "center": False,
-            "right": False
-        }
+        self.left_button = False
+        self.last_press_time = 0  # Timestamp of the last button press
+        self.debounce_interval = 0.3  # Debounce interval in seconds
 
     def handle_input(self):
-        """
-        Update the state of controls based on key presses.
-        """
         keys = pygame.key.get_pressed()
-        self.inputs["left"] = keys[pygame.K_q]  # "q" for left
-        self.inputs["center"] = keys[pygame.K_s]  # "s" for down
-        self.inputs["right"] = keys[pygame.K_d]  # "d" for right
 
-    def get_inputs(self):
-        """
-        Get the current state of the inputs.
-
-        Returns:
-            dict: Current state of controls.
-        """
-        return self.inputs
+        # Check if the left button ('q') is pressed
+        if keys[pygame.K_q]:
+            current_time = time.time()
+            if current_time - self.last_press_time > self.debounce_interval:
+                self.left_button = True
+                self.last_press_time = current_time
+            else:
+                self.left_button = False
+        else:
+            self.left_button = False
