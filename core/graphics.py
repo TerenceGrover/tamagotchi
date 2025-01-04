@@ -18,6 +18,10 @@ class Graphics:
         self.sprites = []
         self.current_sprite_index = 0
         self.black = (0,0,0)
+        self.frame_x = int(matrix_width // 10)
+        self.frame_y = int(matrix_height // 10)
+        self.frame_width = int(matrix_width // 1.2)
+        self.frame_height = int(matrix_height // 1.2)
 
     def load_sprites(self, folder_path):
         sprites = []
@@ -50,16 +54,95 @@ class Graphics:
         current_time = time.time()
         if current_time - self.last_move_time > self.pause_duration:
             direction = random.choice(["left", "right", "up", "down"])
-            if direction == "left" and self.position[0] > 0:
+            if direction == "left" and self.position[0] > self.frame_x:
                 self.position[0] -= 1
-            elif direction == "right" and self.position[0] < self.matrix_width - 10:
+            elif direction == "right" and self.position[0] < self.frame_x + self.frame_width - 10:
                 self.position[0] += 1
-            elif direction == "up" and self.position[1] > 0:
+            elif direction == "up" and self.position[1] > self.frame_y:
                 self.position[1] -= 1
-            elif direction == "down" and self.position[1] < self.matrix_height - 10:
+            elif direction == "down" and self.position[1] < self.frame_y + self.frame_height - 10:
                 self.position[1] += 1
             self.last_move_time = current_time
             self.pause_duration = random.uniform(1, 3)
+            
+    def draw_frame(self):
+        """
+        Draw the frame as matrix pixels with outlines and add points for game categories.
+        """
+        # Draw the frame with outlined pixels
+        for x in range(self.frame_x, self.frame_x + self.frame_width):
+            # Top line
+            pygame.draw.rect(
+                self.screen,
+                (0, 0, 0),  # Black outline
+                (x * self.pixel_size - 1, self.frame_y * self.pixel_size - 1, self.pixel_size + 2, self.pixel_size + 2),
+            )
+            pygame.draw.rect(
+                self.screen,
+                (255, 255, 255),  # White pixel
+                (x * self.pixel_size, self.frame_y * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
+            )
+            # Bottom line
+            pygame.draw.rect(
+                self.screen,
+                (0, 0, 0),  # Black outline
+                (x * self.pixel_size - 1, (self.frame_y + self.frame_height - 1) * self.pixel_size - 1, self.pixel_size + 2, self.pixel_size + 2),
+            )
+            pygame.draw.rect(
+                self.screen,
+                (255, 255, 255),  # White pixel
+                (x * self.pixel_size, (self.frame_y + self.frame_height - 1) * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
+            )
+        for y in range(self.frame_y, self.frame_y + self.frame_height):
+            # Left line
+            pygame.draw.rect(
+                self.screen,
+                (0, 0, 0),  # Black outline
+                (self.frame_x * self.pixel_size - 1, y * self.pixel_size - 1, self.pixel_size + 2, self.pixel_size + 2),
+            )
+            pygame.draw.rect(
+                self.screen,
+                (255, 255, 255),  # White pixel
+                (self.frame_x * self.pixel_size, y * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
+            )
+            # Right line
+            pygame.draw.rect(
+                self.screen,
+                (0, 0, 0),  # Black outline
+                ((self.frame_x + self.frame_width - 1) * self.pixel_size - 1, y * self.pixel_size - 1, self.pixel_size + 2, self.pixel_size + 2),
+            )
+            pygame.draw.rect(
+                self.screen,
+                (255, 255, 255),  # White pixel
+                ((self.frame_x + self.frame_width - 1) * self.pixel_size, y * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
+            )
+
+        # Define and draw the points with outlined pixels
+        top_points = [
+            (self.frame_x + self.frame_width // 7, self.frame_y - 2),
+            (self.frame_x + self.frame_width // 2, self.frame_y - 2),
+            (self.frame_x + 6 * self.frame_width // 7, self.frame_y - 2),
+        ]
+        bottom_points = [
+            (self.frame_x + self.frame_width // 7, self.frame_y + self.frame_height + 1),
+            (self.frame_x + self.frame_width // 2, self.frame_y + self.frame_height + 1),
+            (self.frame_x + 6 * self.frame_width // 7, self.frame_y + self.frame_height + 1),
+        ]
+
+        for x, y in top_points + bottom_points:
+            # Black outline
+            pygame.draw.rect(
+                self.screen,
+                (0, 0, 0),  # Black outline
+                (x * self.pixel_size - 1, y * self.pixel_size - 1, self.pixel_size + 2, self.pixel_size + 2),
+            )
+            # Red pixel
+            pygame.draw.rect(
+                self.screen,
+                (255, 0, 0),  # Red pixel
+                (x * self.pixel_size, y * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
+            )
+
 
     def draw_sprite(self):
         sprite_matrix = self.sprites[self.current_sprite_index]

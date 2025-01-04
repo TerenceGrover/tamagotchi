@@ -49,11 +49,9 @@ def main():
         if new_sprites != graphics.sprites:
             graphics.set_sprites(new_sprites)
 
-        # Decay stats
-        stats.decay_stats()
-
-        # Handle screens
+        # Handle home screen
         if states.current_screen == "home_screen":
+            graphics.draw_frame()
             graphics.switch_sprite()
             graphics.move_sprite()
             graphics.draw_sprite()
@@ -74,6 +72,7 @@ def main():
         clock.tick(FPS)
 
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
