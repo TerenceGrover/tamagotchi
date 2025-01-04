@@ -11,63 +11,63 @@ PIXEL_SIZE = 20
 FPS = 30
 
 def main():
-    # Initialize Pygame
     pygame.init()
     screen_width = MATRIX_WIDTH * PIXEL_SIZE
     screen_height = MATRIX_HEIGHT * PIXEL_SIZE
     screen = pygame.display.set_mode((screen_width, screen_height))
-    pygame.display.set_caption("Tamagotchi Movement")
+    pygame.display.set_caption("Tamagotchi")
 
-    # Initialize modules
     controls = Controls()
-    stats = Stats()
     states = States()
+    stats = Stats()
     graphics = Graphics(screen, MATRIX_WIDTH, MATRIX_HEIGHT, PIXEL_SIZE)
 
-    # Load initial sprites
     graphics.set_sprites(graphics.load_sprites(states.get_sprite_folder()))
 
-    # Game loop
     clock = pygame.time.Clock()
     running = True
+
     while running:
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 running = False
 
         # Handle inputs
         controls.handle_input()
 
-        # Clear the screen
-        graphics.clear_screen()
-
-        # Update life stage
+        # Update life stage and stats
+        old_stage = states.stage_of_life
         states.update_life_stage()
+        if old_stage != states.stage_of_life:
+            graphics.update_sprites(states)  # Reload sprites on stage change
 
-        # Reload sprites if life stage changes
-        new_sprites = graphics.load_sprites(states.get_sprite_folder())
-        if new_sprites != graphics.sprites:
-            graphics.set_sprites(new_sprites)
+        stats.decay_stats()  # Decay stats over time
 
-        # Handle home screen
+        # Screen-specific rendering
         if states.current_screen == "home_screen":
-            graphics.draw_frame()
-            graphics.switch_sprite()
-            graphics.move_sprite()
-            graphics.draw_sprite()
+            graphics.draw_home_screen(states.selected_point_index)
 
-            # Transition to stats screen
+            if controls.right_button:
+                states.cycle_point()
+            if controls.center_button:
+                states.transition_to_screen(states.get_current_screen_from_point())
             if controls.left_button:
                 states.transition_to_screen("stats_screen")
 
         elif states.current_screen == "stats_screen":
+            graphics.clear_screen()
             stats.render_stats_screen(graphics)
-
-            # Return to home screen
             if controls.left_button:
                 states.transition_to_screen("home_screen")
 
-        # Update the display
+        elif states.current_screen.startswith("game_"):
+            graphics.clear_screen()
+            graphics.draw_game_screen(states.selected_point_index)
+
+            if controls.left_button:
+                states.transition_to_screen("home_screen")
+
         pygame.display.flip()
         clock.tick(FPS)
 

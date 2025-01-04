@@ -50,6 +50,13 @@ class Graphics:
             self.last_switch_time = current_time
             self.switch_interval = random.uniform(0.5, 2.0)
 
+    def update_sprites(self, states):
+        """
+        Update sprites based on the current state of life.
+        """
+        sprite_folder = states.get_sprite_folder()
+        self.set_sprites(self.load_sprites(sprite_folder))
+
     def move_sprite(self):
         current_time = time.time()
         if current_time - self.last_move_time > self.pause_duration:
@@ -117,7 +124,14 @@ class Graphics:
                 ((self.frame_x + self.frame_width - 1) * self.pixel_size, y * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
             )
 
-        # Define and draw the points with outlined pixels
+    def draw_frame_and_points(self, selected_point_index):
+        """
+        Draw the frame and points, with the selected point flashing.
+        """
+        # Frame drawing code remains the same
+        self.draw_frame()
+
+        # Define the points
         top_points = [
             (self.frame_x + self.frame_width // 7, self.frame_y - 2),
             (self.frame_x + self.frame_width // 2, self.frame_y - 2),
@@ -128,19 +142,22 @@ class Graphics:
             (self.frame_x + self.frame_width // 2, self.frame_y + self.frame_height + 1),
             (self.frame_x + 6 * self.frame_width // 7, self.frame_y + self.frame_height + 1),
         ]
+        all_points = top_points + bottom_points
 
-        for x, y in top_points + bottom_points:
-            # Black outline
+        # Draw the points
+        current_time = time.time()
+        for i, (x, y) in enumerate(all_points):
+            # Determine if the point should flash
+            if i == selected_point_index and int(current_time * 2) % 2 == 0:
+                color = (0, 0, 0)  # Flashing makes the point "invisible"
+            else:
+                color = (255, 0, 0)  # Red point
+
+            # Draw the point
             pygame.draw.rect(
                 self.screen,
-                (0, 0, 0),  # Black outline
-                (x * self.pixel_size - 1, y * self.pixel_size - 1, self.pixel_size + 2, self.pixel_size + 2),
-            )
-            # Red pixel
-            pygame.draw.rect(
-                self.screen,
-                (255, 0, 0),  # Red pixel
-                (x * self.pixel_size, y * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
+                color,
+                (x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size),
             )
 
 
@@ -156,6 +173,28 @@ class Graphics:
                     (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
                 )
 
+    def draw_home_screen(self, selected_point_index):
+        """
+        Draw the home screen, including the frame and flashing points.
+        """
+        self.clear_screen()
+        self.draw_frame_and_points(selected_point_index)
+        self.switch_sprite()
+        self.move_sprite()
+        self.draw_sprite()
+
+    def draw_game_screen(self, game_index):
+        """
+        Draw a game screen based on the selected point.
+        """
+        self.clear_screen()
+        # Render a placeholder for the game screen
+        pygame.draw.rect(
+            self.screen,
+            (random.randint(0, 255), 255, random.randint(0, 255)),  # Green rectangle for demo purposes
+            (self.matrix_width * 7.5, self.pixel_size * 7.5, self.pixel_size * 7.5, self.pixel_size * 7.5),
+        )
+        pygame.display.set_caption(f"Game {game_index + 1}")  # Update window title
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""

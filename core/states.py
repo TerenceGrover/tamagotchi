@@ -2,26 +2,25 @@ import time
 
 class States:
     def __init__(self):
+        self.stage_of_life = "egg"  # Default stage
+        self.character = "whore1"  # Default character
         self.current_screen = "home_screen"  # Default screen
-        self.stage_of_life = "egg"          # Start as an egg
-        self.character = "whore1"          # Default character
-        self.start_time = time.time()      # Track game start time
-        self.life_stages = {
-            "egg": 15,     # Time in seconds to transition to 'small'
-            "small": 30,   # Time to transition to 'adult'
-            "adult": 60,   # Time to transition to 'dead'
-        }
+        self.selected_point_index = 0  # Default point selection
+        self.point_screens = [
+            "game_1_screen", "game_2_screen", "game_3_screen",
+            "game_4_screen", "game_5_screen", "game_6_screen",
+        ]
 
-    def transition_to_screen(self, new_screen):
-        print(f"Transitioning from {self.current_screen} to {new_screen}")
-        self.current_screen = new_screen
+        # Age-related properties
+        self.age = 0
+        self.start_time = time.time()
+        self.life_stages = {"egg": 10, "small": 30, "adult": 60}  # Age thresholds
 
     def update_life_stage(self):
         """
-        Update the life stage based on elapsed time.
+        Update the life stage based on the elapsed time.
         """
         elapsed_time = time.time() - self.start_time
-
         if self.stage_of_life == "egg" and elapsed_time > self.life_stages["egg"]:
             self.transition_to_life_stage("small")
         elif self.stage_of_life == "small" and elapsed_time > self.life_stages["small"]:
@@ -30,14 +29,41 @@ class States:
             self.transition_to_life_stage("dead")
 
     def transition_to_life_stage(self, new_stage):
+        """
+        Transition to a new life stage.
+        """
         print(f"Transitioning from {self.stage_of_life} to {new_stage}")
         self.stage_of_life = new_stage
+        self.start_time = time.time()  # Reset timer for the new stage
 
     def get_sprite_folder(self):
         """
         Get the sprite folder path based on the current life stage and character.
+        """
+        return f"assets/sprites/{self.character}/{self.stage_of_life}"
 
-        Returns:
-            str: Path to the sprite folder.
+
+    def transition_to_screen(self, new_screen):
+        """
+        Transition to a new screen.
+        """
+        print(f"Transitioning to {new_screen}")
+        self.current_screen = new_screen
+
+    def cycle_point(self):
+        """
+        Cycle through the points on the home screen.
+        """
+        self.selected_point_index = (self.selected_point_index + 1) % len(self.point_screens)
+
+    def get_current_screen_from_point(self):
+        """
+        Get the screen associated with the currently selected point.
+        """
+        return self.point_screens[self.selected_point_index]
+    
+    def get_sprite_folder(self):
+        """
+        Get the sprite folder path based on the current life stage and character.
         """
         return f"assets/sprites/{self.character}/{self.stage_of_life}"
