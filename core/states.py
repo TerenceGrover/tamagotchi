@@ -7,8 +7,8 @@ class States:
         self.current_screen = "home_screen"  # Default screen
         self.selected_point_index = 0  # Default point selection
         self.point_screens = [
-            "game_1_screen", "game_2_screen", "game_3_screen",
-            "game_4_screen", "game_5_screen", "game_6_screen",
+            "food_screen", "housing_screen", "socialize_screen", 
+            "education_screen", "job_screen", "hobby_screen"
         ]
 
         # Age-related properties
