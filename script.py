@@ -10,6 +10,18 @@ MATRIX_HEIGHT = 32
 PIXEL_SIZE = 20
 FPS = 30
 
+import pygame
+from core.graphics import Graphics
+from core.controls import Controls
+from core.states import States
+from core.stats import Stats
+
+# Constants
+MATRIX_WIDTH = 64
+MATRIX_HEIGHT = 32
+PIXEL_SIZE = 20
+FPS = 30
+
 def main():
     pygame.init()
     screen_width = MATRIX_WIDTH * PIXEL_SIZE
@@ -50,9 +62,9 @@ def main():
 
             if controls.right_button:
                 states.cycle_point()
-            if controls.center_button:
+            elif controls.center_button:
                 states.transition_to_screen(states.get_current_screen_from_point())
-            if controls.left_button:
+            elif controls.left_button:
                 states.transition_to_screen("stats_screen")
 
         elif states.current_screen == "stats_screen":
@@ -61,9 +73,9 @@ def main():
             if controls.left_button:
                 states.transition_to_screen("home_screen")
 
-        elif states.current_screen.startswith("game_"):
+        elif states.current_screen in states.point_screens:
             graphics.clear_screen()
-            graphics.draw_game_screen(states.selected_point_index)
+            graphics.render_individual_screen(states.current_screen)
 
             if controls.left_button:
                 states.transition_to_screen("home_screen")

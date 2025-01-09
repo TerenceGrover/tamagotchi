@@ -3,6 +3,7 @@ import random
 from PIL import Image
 import pygame
 import os
+from utils.text_utils import text_to_matrix
 
 class Graphics:
     def __init__(self, screen, matrix_width, matrix_height, pixel_size):
@@ -195,6 +196,28 @@ class Graphics:
             (self.matrix_width * 7.5, self.pixel_size * 7.5, self.pixel_size * 7.5, self.pixel_size * 7.5),
         )
         pygame.display.set_caption(f"Game {game_index + 1}")  # Update window title
+
+    def render_individual_screen(self, screen_name):
+        """
+        Render the individual game or activity screen based on the screen name.
+        """
+        self.clear_screen()
+        text = f"{screen_name.replace('_', '\n').capitalize()}"
+        text_matrix = text_to_matrix(
+            text, "assets/fonts/tamzen.ttf", 11, self.matrix_width, self.matrix_height
+        )
+
+        # Draw the text in the center of the screen
+        for y, row in enumerate(text_matrix):
+            for x, pixel in enumerate(row):
+                if pixel != (0, 0, 0):
+                    screen_x = x * self.pixel_size
+                    screen_y = y * self.pixel_size
+                    pygame.draw.rect(
+                        self.screen,
+                        pixel,
+                        (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
+                    )
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""
