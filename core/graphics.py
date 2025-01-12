@@ -125,6 +125,33 @@ class Graphics:
                 ((self.frame_x + self.frame_width - 1) * self.pixel_size, y * self.pixel_size, self.pixel_size - 2, self.pixel_size - 2),
             )
 
+    def draw_sprite_at(self, x, y, sprite_path, sprite_width=10, sprite_height=10):
+        """
+        Draw a single sprite at a specific position.
+
+        Args:
+            x (int): X position on the matrix.
+            y (int): Y position on the matrix.
+            sprite_path (str): Path to the sprite file.
+            sprite_width (int): Width of the sprite in pixels.
+            sprite_height (int): Height of the sprite in pixels.
+        """
+        img = Image.open(sprite_path).convert("RGB")
+        img = img.resize((sprite_width, sprite_height))  # Resize to specified dimensions
+        sprite_matrix = [[img.getpixel((col, row)) for col in range(sprite_width)] for row in range(sprite_height)]
+
+        for row_idx, row in enumerate(sprite_matrix):
+            for col_idx, pixel in enumerate(row):
+                if pixel != (0, 0, 0):  # Skip black pixels
+                    screen_x = (x + col_idx) * self.pixel_size
+                    screen_y = (y + row_idx) * self.pixel_size
+                    pygame.draw.rect(
+                        self.screen,
+                        pixel,
+                        (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
+                    )
+
+
     def draw_frame_and_points(self, selected_point_index):
         """
         Draw the frame and points, with the selected point flashing.
@@ -161,6 +188,26 @@ class Graphics:
                 (x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size),
             )
 
+    def draw_matrix(self, matrix, start_x, start_y):
+        """
+        Draw an RGB matrix at the given starting position on the screen.
+
+        Args:
+            matrix (list): RGB matrix to render.
+            start_x (int): X coordinate for the top-left corner.
+            start_y (int): Y coordinate for the top-left corner.
+        """
+        for y, row in enumerate(matrix):
+            for x, pixel in enumerate(row):
+                if pixel != (0, 0, 0):  # Skip black pixels
+                    screen_x = (start_x + x) * self.pixel_size
+                    screen_y = (start_y + y) * self.pixel_size
+                    pygame.draw.rect(
+                        self.screen,
+                        pixel,
+                        (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
+                    )
+
 
     def draw_sprite(self):
         sprite_matrix = self.sprites[self.current_sprite_index]
@@ -184,19 +231,6 @@ class Graphics:
         self.move_sprite()
         self.draw_sprite()
 
-    def draw_game_screen(self, game_index):
-        """
-        Draw a game screen based on the selected point.
-        """
-        self.clear_screen()
-        # Render a placeholder for the game screen
-        pygame.draw.rect(
-            self.screen,
-            (random.randint(0, 255), 255, random.randint(0, 255)),  # Green rectangle for demo purposes
-            (self.matrix_width * 7.5, self.pixel_size * 7.5, self.pixel_size * 7.5, self.pixel_size * 7.5),
-        )
-        pygame.display.set_caption(f"Game {game_index + 1}")  # Update window title
-
     def render_individual_screen(self, screen_name):
         """
         Render the individual game or activity screen based on the screen name.
@@ -218,6 +252,87 @@ class Graphics:
                         pixel,
                         (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
                     )
+    
+    def draw_education_screen(self, selected_suitcase):
+        """
+        Render the education mini-game screen.
+        """
+        self.clear_screen()
+
+        # Suitcase positions
+        suitcase_1_x = self.matrix_width // 6
+        suitcase_2_x = (self.matrix_width * 4) // 6
+        suitcase_y = self.matrix_height // 2
+
+        # Arrow positions
+        arrow_y = suitcase_y - 10  # Ten rows above the suitcase
+        arrow_offset = 3
+
+        # Draw suitcases
+        self.draw_sprite_at(suitcase_1_x, suitcase_y, "assets/sprites/suitcase.png", sprite_width=14, sprite_height=10)
+        self.draw_sprite_at(suitcase_2_x, suitcase_y, "assets/sprites/suitcase.png", sprite_width=14, sprite_height=10)
+
+        # Draw arrow above selected suitcase
+        arrow_x = suitcase_1_x + arrow_offset if selected_suitcase == 0 else suitcase_2_x + arrow_offset
+        self.draw_sprite_at(arrow_x, arrow_y, "assets/sprites/arrow.png", sprite_width=8, sprite_height=5)
+
+    def draw_education_animation(self, selected_suitcase, animation_frame, level, loan):
+        """
+        Render the animation after selecting a suitcase.
+
+        Args:
+            selected_suitcase (int): Index of the selected suitcase (0 or 1).
+            animation_frame (int): Current animation frame (0, 1, or 2).
+            level (str): Selected education level (e.g., "BSc").
+            loan (int): Associated student loan amount.
+        """
+        self.clear_screen()
+
+        # Positions
+        suitcase_1_x = self.matrix_width // 6
+        suitcase_2_x = (self.matrix_width * 4) // 6
+        suitcase_y = self.matrix_height // 2
+        center_x = self.matrix_width // 2
+        center_y = self.matrix_height // 2
+
+        if animation_frame == 0:
+            # Frame 1: Arrow and non-selected suitcase disappear
+            selected_x = suitcase_1_x if selected_suitcase == 0 else suitcase_2_x
+            self.draw_sprite_at(
+                selected_x, suitcase_y, "assets/sprites/suitcase.png", sprite_width=14, sprite_height=10
+            )
+
+        elif animation_frame == 1:
+            # Frame 2: Move selected suitcase to center and grow
+            suitcase_size = 18  # Larger suitcase size
+            self.draw_sprite_at(
+                center_x - suitcase_size // 2,
+                center_y - suitcase_size // 2,
+                "assets/sprites/suitcase.png",
+                sprite_width=suitcase_size,
+                sprite_height=suitcase_size,
+            )
+
+        elif animation_frame == 2:
+            # Frame 3: Display text for education level and loan
+            font_path = "assets/fonts/tamzen.ttf"
+            font_size = 12
+
+            # Level text
+            level_matrix = text_to_matrix(
+                f"Level: {level}", font_path, font_size, self.matrix_width, 10
+            )
+            self.draw_matrix(level_matrix, center_x - self.matrix_width // 4, center_y - 15)
+
+            # Loan text
+            loan_matrix = text_to_matrix(
+                f"Loan: ${loan}", font_path, font_size, self.matrix_width, 10
+            )
+            self.draw_matrix(loan_matrix, center_x - self.matrix_width // 4, center_y + 5)
+
+
+
+
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""

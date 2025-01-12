@@ -6,6 +6,9 @@ class States:
         self.character = "whore1"  # Default character
         self.current_screen = "home_screen"  # Default screen
         self.selected_point_index = 0  # Default point selection
+        self.animation_frame = None
+        self.selected_level = None
+        self.student_loan = None
         self.point_screens = [
             "food_screen", "housing_screen", "socialize_screen", 
             "education_screen", "job_screen", "hobby_screen"
@@ -27,6 +30,14 @@ class States:
             self.transition_to_life_stage("adult")
         elif self.stage_of_life == "adult" and elapsed_time > self.life_stages["adult"]:
             self.transition_to_life_stage("dead")
+
+    def update_education(self, level, loan):
+        """
+        Update education level and associated student loan.
+        """
+        self.education_level = level
+        self.student_loan = loan
+        print(f"Education Level: {level}, Student Loan: ${loan}")
 
     def transition_to_life_stage(self, new_stage):
         """
