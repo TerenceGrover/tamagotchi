@@ -4,6 +4,8 @@ from core.controls import Controls
 from core.states import States
 from core.stats import Stats
 import random
+from core.minigames.platformer import update_platforms, check_goal_reached, handle_input, draw_platformer, calculate_jump_curve
+
 
 # Constants
 MATRIX_WIDTH = 64
@@ -88,6 +90,7 @@ def main():
                     states.animation_frame = 0
                     states.selected_level = random.choice(["HS", "BSc", "MSc", "PhD"])
                     states.student_loan = random.choice([5000, 20000, 50000, 100000])
+
             else:
                 # Handle animation frames
                 graphics.draw_education_animation(states.selected_point_index, states.animation_frame, 
@@ -105,6 +108,24 @@ def main():
                         states.animation_frame = None
                         states.transition_to_screen("home_screen")
 
+        elif states.current_screen == "food_screen":
+            if not states.platformer_state:
+                states.start_platformer()
+
+            if not states.platformer_state["minigame_ended"]:
+                            # Create jump curve
+                jump_curve = calculate_jump_curve(duration=12, peak_height=2,)
+
+                # Call update_platforms with the jump curve 
+                update_platforms(states.platformer_state, jump_curve)
+                handle_input(states.platformer_state, controls, states, jump_curve)
+                check_goal_reached(states.platformer_state)
+
+            draw_platformer(graphics, states.platformer_state, states.get_sprite_folder())
+
+            if states.platformer_state["minigame_ended"]:
+                states.reset_platformer()
+                states.transition_to_screen("home_screen")
 
 
         elif states.current_screen in states.point_screens:

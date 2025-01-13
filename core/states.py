@@ -1,4 +1,5 @@
 import time
+from core.minigames.platformer import initialize_platformer
 
 class States:
     def __init__(self):
@@ -13,6 +14,7 @@ class States:
             "food_screen", "housing_screen", "socialize_screen", 
             "education_screen", "job_screen", "hobby_screen"
         ]
+        self.platformer_state = None  # Holds platformer game state
 
         # Age-related properties
         self.age = 0
@@ -47,13 +49,6 @@ class States:
         self.stage_of_life = new_stage
         self.start_time = time.time()  # Reset timer for the new stage
 
-    def get_sprite_folder(self):
-        """
-        Get the sprite folder path based on the current life stage and character.
-        """
-        return f"assets/sprites/{self.character}/{self.stage_of_life}"
-
-
     def transition_to_screen(self, new_screen):
         """
         Transition to a new screen.
@@ -78,3 +73,15 @@ class States:
         Get the sprite folder path based on the current life stage and character.
         """
         return f"assets/sprites/{self.character}/{self.stage_of_life}"
+    
+    def start_platformer(self):
+        """
+        Initialize the platformer minigame state.
+        """
+        self.platformer_state = initialize_platformer()
+
+    def reset_platformer(self):
+        """
+        Reset the platformer minigame.
+        """
+        self.platformer_state = None

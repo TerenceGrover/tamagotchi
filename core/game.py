@@ -4,6 +4,7 @@ from core.stats import Stats
 from core.states import States
 import pygame
 
+
 def game_loop(screen, screen_width, screen_height, pixel_size, fps):
     # Initialize modules
     controls = Controls()

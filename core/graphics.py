@@ -330,8 +330,54 @@ class Graphics:
             )
             self.draw_matrix(loan_matrix, center_x - self.matrix_width // 4, center_y + 5)
 
+    def draw_platformer_screen(self, tama_position, platforms, goal_position):
+        """
+        Render the platformer mini-game screen.
 
+        Args:
+            tama_position (tuple): (x, y) position of the Tamagotchi.
+            platforms (list): List of platform positions [(x1, y1, width), ...].
+            goal_position (tuple): (x, y) position of the goal pixel.
+        """
+        self.clear_screen()
 
+        # Draw platforms
+        for platform in platforms:
+            platform_x, platform_y, platform_width = platform
+            for x in range(platform_width):
+                pygame.draw.rect(
+                    self.screen,
+                    (255, 255, 255),  # White platform
+                    (
+                        (platform_x + x) * self.pixel_size,
+                        platform_y * self.pixel_size,
+                        self.pixel_size,
+                        self.pixel_size,
+                    ),
+                )
+
+        # Draw the goal
+        goal_x, goal_y = goal_position
+        pygame.draw.rect(
+            self.screen,
+            (0, 255, 0),  # Green goal
+            (
+                goal_x * self.pixel_size,
+                goal_y * self.pixel_size,
+                self.pixel_size,
+                self.pixel_size,
+            ),
+        )
+
+        # Draw Tamagotchi sprite
+        tama_x, tama_y = tama_position
+        self.draw_sprite_at(
+            tama_x,
+            tama_y,
+            "assets/sprites/tama.png",
+            sprite_width=5,  # Scaled-down sprite
+            sprite_height=5,
+        )
 
 
     def clear_screen(self):
