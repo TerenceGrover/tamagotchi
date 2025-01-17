@@ -19,7 +19,8 @@ class Graphics:
         self.sprites = []
         self.current_sprite_index = 0
         self.black = (0,0,0)
-        self.frame_x = int(matrix_width // 10)
+        self.white = (255, 255, 255)
+        self.frame_x = int(matrix_width // 10)        
         self.frame_y = int(matrix_height // 10)
         self.frame_width = int(matrix_width // 1.2)
         self.frame_height = int(matrix_height // 1.2)

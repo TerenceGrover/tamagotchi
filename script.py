@@ -119,7 +119,7 @@ def main():
                 # Call update_platforms with the jump curve 
                 update_platforms(states.platformer_state, jump_curve)
                 handle_input(states.platformer_state, controls, states, jump_curve)
-                check_goal_reached(states.platformer_state)
+                check_goal_reached(states.platformer_state, stats)
 
             draw_platformer(graphics, states.platformer_state, states.get_sprite_folder())
 

@@ -1,27 +1,43 @@
 import random
 import pygame
-import math
+
 
 def initialize_platformer():
     """
     Initialize platformer game variables.
     """
     return {
-        "tama_position": [3, 10],  # Initial Tamagotchi position
-        "platforms": [
-            [12, 30, 25],  # Platform at x=8, y=30, width=25
-            [50, 16, 10],
-            [25, 24, 30],
-            [20, 25, 10],
-        ],
-        "goal_position": (62, 12),  # Goal position
-        "platform_speed": 1,
+        "tama_position": [3, 8],  # Initial Tamagotchi position
+        "platforms": generate_platforms(5, 64),  # Generate platforms dynamically
+        "goal_position": (60, 10),  # Goal position
+        "goal_area": (58, 8, 3, 3),  # Goal: (x, y, width, height)
+        "platform_speed": .5,
         "minigame_ended": False,
         "jumping": False,
         "jump_counter": 0,  # Timer for the jump animation
         "jump_duration": 20,  # Duration of the jump (frames)
         "on_platform": False,
     }
+
+
+def generate_platforms(num_platforms, screen_width):
+    """
+    Generate evenly spaced platforms.
+
+    Args:
+        num_platforms (int): Number of platforms to generate.
+        screen_width (int): Width of the screen in matrix units.
+
+    Returns:
+        list: List of platforms [x, y, width].
+    """
+    platforms = []
+    for i in range(num_platforms):
+        x = random.randint(i * (screen_width // num_platforms), (i + 1) * (screen_width // num_platforms) - 10)
+        y = random.randint(15, 30)
+        width = random.randint(8, 25)
+        platforms.append([x, y, width])
+    return platforms
 
 
 def calculate_jump_curve(duration, peak_height):
@@ -33,26 +49,32 @@ def calculate_jump_curve(duration, peak_height):
         for t in range(duration + 1)
     ]
 
-
 def update_platforms(game_state, jump_curve):
     """
     Move platforms, reset positions when they leave the screen,
     and check for collisions with the Tamagotchi.
     """
     tama_x, tama_y = game_state["tama_position"]
+    tama_feet_y = tama_y + 7  # Feet position for collision
 
     # Move platforms and reset if out of bounds
     for platform in game_state["platforms"]:
         platform[0] -= game_state["platform_speed"]
         if platform[0] + platform[2] < 0:  # Reset platform position
             platform[0] = 64
-            platform[1] = random.randint(10, 33)
+            platform[1] = random.randint(15, 30)
 
     # Check collisions with platforms
+    was_on_platform = game_state["on_platform"]  # Track previous platform state
     game_state["on_platform"] = False
     for platform_x, platform_y, platform_width in game_state["platforms"]:
-        if platform_x <= tama_x <= platform_x + platform_width and tama_y == platform_y - 5:
+        if (
+            platform_x - 2 <= tama_x <= platform_x + platform_width + 2 and
+            platform_y - 1 <= tama_feet_y <= platform_y + 1
+        ):
             game_state["on_platform"] = True
+            if not game_state["jumping"]:  # Snap to platform if not jumping
+                game_state["tama_position"][1] = platform_y - 5
             break
 
     # Gravity
@@ -69,17 +91,11 @@ def update_platforms(game_state, jump_curve):
             game_state["jump_counter"] = 0
 
     # Prevent falling through the floor
-    game_state["tama_position"][1] = min(max(game_state["tama_position"][1], 0), 40)
+    game_state["tama_position"][1] = min(max(game_state["tama_position"][1], 0), 34)
 
-
-def check_goal_reached(game_state):
-    """
-    Check if the Tamagotchi has reached the goal.
-    """
-    tama_x, tama_y = game_state["tama_position"]
-    goal_x, goal_y = game_state["goal_position"]
-    if tama_x == goal_x and tama_y == goal_y:
+    if game_state["tama_position"][1] == 34:
         game_state["minigame_ended"] = True
+
 
 
 def handle_input(game_state, controls, states, jump_curve):
@@ -101,8 +117,19 @@ def handle_input(game_state, controls, states, jump_curve):
         game_state["jumping"] = True
         game_state["jump_counter"] = 0
 
-    # Prevent going out of bounds
-    game_state["tama_position"][1] = min(max(game_state["tama_position"][1], 0), 30)
+
+def check_goal_reached(game_state, stats):
+    """
+    Check if the Tamagotchi has reached the goal.
+    """
+    tama_x, tama_y = game_state["tama_position"]
+    tama_feet_y = tama_y + 5
+    goal_x, goal_y, goal_width, goal_height = game_state["goal_area"]
+
+    if goal_x - goal_width <= tama_x <= goal_x + goal_width and goal_y - goal_height <= tama_y <= goal_y + goal_height:
+        game_state["minigame_ended"] = True
+        stats.stats["food"] = min(stats.stats["food"] + 20, 100)  # Cap food at 100
+
 
 
 def draw_platformer(graphics, game_state, sprite_folder):
@@ -147,6 +174,6 @@ def draw_platformer(graphics, game_state, sprite_folder):
         tama_x,
         tama_y,
         f"{sprite_folder}/sprite0.png",
-        sprite_width=7,  # Scaled-down sprite
-        sprite_height=7,
+        sprite_width=8,  # Scaled-down sprite
+        sprite_height=8,
     )
