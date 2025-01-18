@@ -321,15 +321,15 @@ class Graphics:
 
             # Level text
             level_matrix = text_to_matrix(
-                f"Level: {level}", font_path, font_size, self.matrix_width, 10
+                f"{level}", font_path, font_size, self.matrix_width, 10
             )
-            self.draw_matrix(level_matrix, center_x - self.matrix_width // 4, center_y - 15)
+            self.draw_matrix(level_matrix, center_x - self.matrix_width // 4, center_y - 12)
 
             # Loan text
             loan_matrix = text_to_matrix(
-                f"Loan: ${loan}", font_path, font_size, self.matrix_width, 10
+                f"- ${loan}", font_path, font_size, self.matrix_width, 10
             )
-            self.draw_matrix(loan_matrix, center_x - self.matrix_width // 4, center_y + 5)
+            self.draw_matrix(loan_matrix, center_x - self.matrix_width // 2, center_y + 2)
 
     def draw_platformer_screen(self, tama_position, platforms, goal_position):
         """

@@ -88,10 +88,10 @@ def main():
                 # Select a suitcase to start the animation
                 if controls.center_button:
                     states.animation_frame = 0
-                    states.selected_level = random.choice(["HS", "BSc", "MSc", "PhD"])
+                    states.selected_level = random.choice(["HS", "BSc", "MSc", "PhD", "DropOut"])
                     states.student_loan = random.choice([5000, 20000, 50000, 100000])
 
-            else:
+            elif states.animation_frame <= 2:
                 # Handle animation frames
                 graphics.draw_education_animation(states.selected_point_index, states.animation_frame, 
                                                 states.selected_level, states.student_loan)
@@ -101,12 +101,12 @@ def main():
                 states.animation_frame += 1
 
                 # Reset after animation
-                if states.animation_frame > 2:
-                    # change only on button press
-                    if controls.left_button:
-                        states.update_education(states.selected_level, states.student_loan)
-                        states.animation_frame = None
-                        states.transition_to_screen("home_screen")
+            else:
+                # change only on button press
+                if controls.left_button:
+                    states.update_education(states.selected_level, states.student_loan)
+                    states.animation_frame = None
+                    states.transition_to_screen("home_screen")
 
         elif states.current_screen == "food_screen":
             if not states.platformer_state:

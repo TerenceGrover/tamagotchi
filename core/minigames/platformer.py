@@ -7,7 +7,7 @@ def initialize_platformer():
     Initialize platformer game variables.
     """
     return {
-        "tama_position": [3, 8],  # Initial Tamagotchi position
+        "tama_position": [3, 10],  # Initial Tamagotchi position
         "platforms": generate_platforms(5, 64),  # Generate platforms dynamically
         "goal_position": (60, 10),  # Goal position
         "goal_area": (58, 8, 3, 3),  # Goal: (x, y, width, height)
@@ -55,7 +55,7 @@ def update_platforms(game_state, jump_curve):
     and check for collisions with the Tamagotchi.
     """
     tama_x, tama_y = game_state["tama_position"]
-    tama_feet_y = tama_y + 7  # Feet position for collision
+    tama_feet_y = tama_y + 5  # Feet position for collision
 
     # Move platforms and reset if out of bounds
     for platform in game_state["platforms"]:
@@ -116,6 +116,9 @@ def handle_input(game_state, controls, states, jump_curve):
     if controls.center_button and not game_state["jumping"] and game_state["on_platform"]:
         game_state["jumping"] = True
         game_state["jump_counter"] = 0
+        # Allow jumping even if currently on a platform
+        game_state["on_platform"] = False
+
 
 
 def check_goal_reached(game_state, stats):
@@ -174,6 +177,6 @@ def draw_platformer(graphics, game_state, sprite_folder):
         tama_x,
         tama_y,
         f"{sprite_folder}/sprite0.png",
-        sprite_width=8,  # Scaled-down sprite
-        sprite_height=8,
+        sprite_width=7,  # Scaled-down sprite
+        sprite_height=7,
     )
