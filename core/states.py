@@ -74,11 +74,11 @@ class States:
         """
         return f"assets/sprites/{self.character}/{self.stage_of_life}"
     
-    def start_platformer(self):
+    def start_platformer(self, money_stats):
         """
         Initialize the platformer minigame state.
         """
-        self.platformer_state = initialize_platformer()
+        self.platformer_state = initialize_platformer(money_stats)
 
     def reset_platformer(self):
         """

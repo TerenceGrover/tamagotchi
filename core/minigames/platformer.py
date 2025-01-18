@@ -2,13 +2,13 @@ import random
 import pygame
 
 
-def initialize_platformer():
+def initialize_platformer(money_stats):
     """
     Initialize platformer game variables.
     """
     return {
         "tama_position": [3, 10],  # Initial Tamagotchi position
-        "platforms": generate_platforms(5, 64),  # Generate platforms dynamically
+        "platforms": generate_platforms(5, 64, money_stats),  # Generate platforms dynamically
         "goal_position": (60, 10),  # Goal position
         "goal_area": (58, 8, 3, 3),  # Goal: (x, y, width, height)
         "platform_speed": .5,
@@ -19,25 +19,37 @@ def initialize_platformer():
         "on_platform": False,
     }
 
-
-def generate_platforms(num_platforms, screen_width):
+def generate_platforms(num_platforms, screen_width, money_stat):
     """
-    Generate evenly spaced platforms.
+    Generate platforms dynamically based on the money stat, ensuring valid ranges.
 
     Args:
-        num_platforms (int): Number of platforms to generate.
+        num_platforms (int): Base number of platforms.
         screen_width (int): Width of the screen in matrix units.
+        money_stat (int): Money stat affecting the platform difficulty.
 
     Returns:
         list: List of platforms [x, y, width].
     """
+    # Cap the number of platforms to fit within the screen
+    max_platforms = screen_width // 10  # Ensure platforms have enough spacing
+    num_platforms = min(num_platforms + money_stat // 20, max_platforms)
+
     platforms = []
     for i in range(num_platforms):
-        x = random.randint(i * (screen_width // num_platforms), (i + 1) * (screen_width // num_platforms) - 10)
-        y = random.randint(15, 30)
-        width = random.randint(8, 25)
+        start_x = i * (screen_width // num_platforms)
+        end_x = (i + 1) * (screen_width // num_platforms) - 10
+        if start_x >= end_x:
+            end_x = start_x + 5  # Ensure a minimum range for platform x
+
+        x = random.randint(start_x, end_x)
+        y = random.randint(15, 30)  # Vertical positioning
+        width = random.randint(8, 25 + money_stat // 10)  # Platform width grows with money
         platforms.append([x, y, width])
+
     return platforms
+
+
 
 
 def calculate_jump_curve(duration, peak_height):

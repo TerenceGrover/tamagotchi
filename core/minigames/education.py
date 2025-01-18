@@ -1,7 +1,7 @@
 import random
 import pygame
 
-def handle_education_input(states, controls):
+def handle_education_input(stats, states, controls):
     """
     Handle input and navigation logic for the education mini-game.
     """
@@ -31,7 +31,7 @@ def handle_education_input(states, controls):
     else:
         # Wait for button press to return home
         if controls.left_button:
-            states.update_education(states.selected_level, states.student_loan)
+            stats.update_education_stats(states.selected_level, states.student_loan)
             states.animation_frame = None
             states.transition_to_screen("home_screen")
 

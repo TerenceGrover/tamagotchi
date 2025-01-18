@@ -65,12 +65,12 @@ def main():
                 states.transition_to_screen("home_screen")
 
         elif states.current_screen == "education_screen":
-            handle_education_input(states, controls)
+            handle_education_input(stats, states, controls)
             render_education_screen(graphics, states)
 
         elif states.current_screen == "food_screen":
             if not states.platformer_state:
-                states.start_platformer()
+                states.start_platformer(stats.stats["money"])
 
             if not states.platformer_state["minigame_ended"]:
                 # Create jump curve

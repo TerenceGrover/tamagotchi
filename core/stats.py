@@ -9,6 +9,8 @@ class Stats:
             "safe": 70,
             "social": 50,
             "esteem": 90,
+            "education": None,
+            "money": 100
         }
         self.last_update_time = time.time()
         self.decay_rates = {
@@ -27,6 +29,17 @@ class Stats:
                 self.stats[stat] = max(0, self.stats[stat] - self.decay_rates[stat])
             self.last_update_time = current_time
 
+    def update_education_stats(self, education_level, student_loan):
+        """
+        Update the education and money stats based on the chosen education level and loan.
+
+        Args:
+            education_level (str): The chosen education level.
+            student_loan (int): The cost associated with the education.
+        """
+        self.stats["education"] = education_level
+        self.stats["money"] = max(0, self.stats["money"] - student_loan)  # Deduct loan, ensuring non-negative money
+
     def render_stats_screen(self, graphics):
         stats_left = [
             f"F:{self.stats['food']}",
@@ -36,6 +49,7 @@ class Stats:
         stats_right = [
             f"So:{self.stats['social']}",
             f"E:{self.stats['esteem']}",
+            f"Edu:{self.stats['education'] or 'N/A'}"
         ]
 
         total_rows = max(len(stats_left), len(stats_right))
