@@ -327,7 +327,7 @@ class Graphics:
 
             # Loan text
             loan_matrix = text_to_matrix(
-                f"- ${loan}", font_path, font_size, self.matrix_width, 10
+                f"-${loan}", font_path, font_size, self.matrix_width, 10
             )
             self.draw_matrix(loan_matrix, center_x - self.matrix_width // 2, center_y + 2)
 
