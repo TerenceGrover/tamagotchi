@@ -6,6 +6,7 @@ class States:
         self.stage_of_life = "egg"  # Default stage
         self.character = "whore1"  # Default character
         self.current_screen = "home_screen"  # Default screen
+        self.social_state = None  # Socializing game state
         self.selected_point_index = 0  # Default point selection
         self.animation_frame = None
         self.selected_level = None

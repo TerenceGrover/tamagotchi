@@ -5,6 +5,7 @@ from core.states import States
 from core.stats import Stats
 from core.minigames.platformer import update_platforms, check_goal_reached, handle_input, draw_platformer, calculate_jump_curve
 from core.minigames.education import handle_education_input, render_education_screen
+from core.minigames.social import handle_social_input, initialize_socializing
 
 # Constants
 MATRIX_WIDTH = 64
@@ -67,6 +68,22 @@ def main():
         elif states.current_screen == "education_screen":
             handle_education_input(stats, states, controls)
             render_education_screen(graphics, states)
+
+        elif states.current_screen == "socialize_screen":
+            if not states.social_state:
+                states.social_state = initialize_socializing(graphics)
+
+            handle_social_input(states.social_state, controls, stats)
+
+            graphics.draw_social_screen(
+                player_sprites=graphics.sprites,
+                other_tama_sprite=states.social_state["other_tama_sprite"],
+                social_state=states.social_state,
+            )
+
+            if states.social_state["interaction_done"] and states.social_state["current_round"] > states.social_state["max_rounds"]:
+                states.transition_to_screen("home_screen")
+                states.social_state = None  # Reset the minigame state
 
         elif states.current_screen == "food_screen":
             if not states.platformer_state:

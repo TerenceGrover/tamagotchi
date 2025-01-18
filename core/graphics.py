@@ -4,6 +4,7 @@ from PIL import Image
 import pygame
 import os
 from utils.text_utils import text_to_matrix
+from utils.color_utils import calculate_average_color
 
 class Graphics:
     def __init__(self, screen, matrix_width, matrix_height, pixel_size):
@@ -379,6 +380,65 @@ class Graphics:
             sprite_width=5,  # Scaled-down sprite
             sprite_height=5,
         )
+
+    def draw_social_screen(self, player_sprites, other_tama_sprite, social_state):
+        """
+        Render the socializing mini-game screen with animations and dynamic bubble colors.
+        """
+        self.clear_screen()
+
+        # Tama positions
+        player_tama_x, player_tama_y = 10, self.matrix_height // 2 - 5 + social_state["tama_animation_offset"]
+        other_tama_x, other_tama_y = self.matrix_width - 15, self.matrix_height // 2 - 5 + social_state["tama_animation_offset"]
+
+        # Up/down animation during feedback
+        if social_state["interaction_done"]:
+            if social_state["animation_frames"] % 10 < 5:
+                social_state["tama_animation_offset"] = -1
+            else:
+                social_state["tama_animation_offset"] = 1
+        else:
+            social_state["tama_animation_offset"] = 0
+
+        # Draw Tamas
+        self.draw_matrix(player_sprites[0], player_tama_x, player_tama_y)  # Player Tama
+        self.draw_sprite_at(other_tama_x, other_tama_y, other_tama_sprite, sprite_width=10, sprite_height=10)  # Other Tama
+
+        # Draw speech bubbles
+        pygame.draw.rect(
+            self.screen,
+            social_state["other_bubble_color"],  # Other Tama's bubble color
+            ((other_tama_x - 7) * self.pixel_size, (other_tama_y - 2) * self.pixel_size, 7 * self.pixel_size, 4 * self.pixel_size)
+        )
+        pygame.draw.rect(
+            self.screen,
+            social_state["player_bubble_color"],  # Dynamically updated player's bubble color
+            ((player_tama_x + 7) * self.pixel_size, (player_tama_y - 2) * self.pixel_size, 7 * self.pixel_size, 4 * self.pixel_size)
+        )
+
+        # Draw feedback sprites
+        if social_state["player_feedback_sprite"]:
+            feedback_index = (social_state["animation_frames"] // 10) % len(social_state["player_feedback_sprite"])
+            self.draw_sprite_at(
+                player_tama_x - 3,
+                player_tama_y - 3,
+                social_state["player_feedback_sprite"][feedback_index],
+                sprite_width=6,
+                sprite_height=6
+            )
+
+        if social_state["other_feedback_sprite"]:
+            feedback_index = (social_state["animation_frames"] // 10) % len(social_state["other_feedback_sprite"])
+            self.draw_sprite_at(
+                other_tama_x + 3,
+                other_tama_y - 3,
+                social_state["other_feedback_sprite"][feedback_index],
+                sprite_width=6,
+                sprite_height=6
+            )
+
+        # Increment animation frames
+        social_state["animation_frames"] += 1
 
 
     def clear_screen(self):
