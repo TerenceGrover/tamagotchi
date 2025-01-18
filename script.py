@@ -3,27 +3,15 @@ from core.graphics import Graphics
 from core.controls import Controls
 from core.states import States
 from core.stats import Stats
-import random
 from core.minigames.platformer import update_platforms, check_goal_reached, handle_input, draw_platformer, calculate_jump_curve
-
-
-# Constants
-MATRIX_WIDTH = 64
-MATRIX_HEIGHT = 32
-PIXEL_SIZE = 20
-FPS = 30
-
-import pygame
-from core.graphics import Graphics
-from core.controls import Controls
-from core.states import States
-from core.stats import Stats
+from core.minigames.education import handle_education_input, render_education_screen
 
 # Constants
 MATRIX_WIDTH = 64
 MATRIX_HEIGHT = 32
 PIXEL_SIZE = 20
 FPS = 30
+
 
 def main():
     pygame.init()
@@ -75,48 +63,20 @@ def main():
             stats.render_stats_screen(graphics)
             if controls.left_button:
                 states.transition_to_screen("home_screen")
-        
+
         elif states.current_screen == "education_screen":
-            if states.animation_frame is None:
-                # Render the mini-game screen
-                graphics.draw_education_screen(states.selected_point_index)
-
-                # Navigate between suitcases
-                if controls.right_button:
-                    states.selected_point_index = (states.selected_point_index + 1) % 2
-
-                # Select a suitcase to start the animation
-                if controls.center_button:
-                    states.animation_frame = 0
-                    states.selected_level = random.choice(["HS", "BSc", "MSc", "PhD", "DropOut"])
-                    states.student_loan = random.choice([5000, 20000, 50000, 100000])
-
-            elif states.animation_frame <= 2:
-                # Handle animation frames
-                graphics.draw_education_animation(states.selected_point_index, states.animation_frame, 
-                                                states.selected_level, states.student_loan)
-
-                # Advance animation frame
-                pygame.time.delay(500)  # Adjust delay as needed
-                states.animation_frame += 1
-
-                # Reset after animation
-            else:
-                # change only on button press
-                if controls.left_button:
-                    states.update_education(states.selected_level, states.student_loan)
-                    states.animation_frame = None
-                    states.transition_to_screen("home_screen")
+            handle_education_input(states, controls)
+            render_education_screen(graphics, states)
 
         elif states.current_screen == "food_screen":
             if not states.platformer_state:
                 states.start_platformer()
 
             if not states.platformer_state["minigame_ended"]:
-                            # Create jump curve
-                jump_curve = calculate_jump_curve(duration=12, peak_height=2,)
+                # Create jump curve
+                jump_curve = calculate_jump_curve(duration=12, peak_height=2)
 
-                # Call update_platforms with the jump curve 
+                # Call update_platforms with the jump curve
                 update_platforms(states.platformer_state, jump_curve)
                 handle_input(states.platformer_state, controls, states, jump_curve)
                 check_goal_reached(states.platformer_state, stats)
@@ -126,7 +86,6 @@ def main():
             if states.platformer_state["minigame_ended"]:
                 states.reset_platformer()
                 states.transition_to_screen("home_screen")
-
 
         elif states.current_screen in states.point_screens:
             graphics.clear_screen()
