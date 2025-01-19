@@ -36,23 +36,32 @@ def handle_social_input(social_state, controls, stats):
         # Make a choice
         if controls.center_button:
             player_choice = social_state["player_options"][social_state["current_choice"]]
+
             if player_choice == social_state["other_bubble_color"]:
-                stats.stats["social"] = min(stats.stats["social"] + 10, 100)
+                # Player matches the other Tama's color
+                stats.stats["social"] = min(stats.stats["social"] + 10, 100)  # Social always increases
+                if random.random() < 0.9:  # 90% chance of esteem decrease
+                    stats.stats["esteem"] = max(stats.stats["esteem"] - 5, 0)
+                    social_state["player_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
+                else:  # 10% chance of esteem increase
+                    stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 100)
+                    social_state["player_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
                 social_state["other_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
-                social_state["player_feedback_sprite"] = None  # No feedback for player
+
             else:
-                stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 100)
+                # Player chooses their own basis color
+                stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 100)  # Esteem always increases
+                if random.random() < 0.5:  # 50% chance of social increase
+                    stats.stats["social"] = min(stats.stats["social"] + 10, 100)
+                    social_state["other_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
+
+                else:  # 50% chance of social decrease
+                    stats.stats["social"] = max(stats.stats["social"] - 5, 0)
+                    social_state["other_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
+                
                 social_state["player_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
-                social_state["other_feedback_sprite"] = None  # No feedback for other Tama
 
-            # Handle decreases
-            if player_choice != social_state["other_bubble_color"]:
-                stats.stats["social"] = max(stats.stats["social"] - 5, 0)
-                social_state["other_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
-            else:
-                stats.stats["esteem"] = max(stats.stats["esteem"] - 5, 0)
-                social_state["player_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
-
+            # Set interaction as done and reset animation
             social_state["interaction_done"] = True
             social_state["animation_frames"] = 0
 

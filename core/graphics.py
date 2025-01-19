@@ -4,7 +4,6 @@ from PIL import Image
 import pygame
 import os
 from utils.text_utils import text_to_matrix
-from utils.color_utils import calculate_average_color
 
 class Graphics:
     def __init__(self, screen, matrix_width, matrix_height, pixel_size):
