@@ -439,6 +439,75 @@ class Graphics:
         # Increment animation frames
         social_state["animation_frames"] += 1
 
+    def draw_housing_screen(self, housing_state, graphics):
+        self.clear_screen()
+
+        # Get the current house
+        current_house = housing_state["housing_options"][housing_state["current_choice"]]
+        house_name = current_house["name"]
+        house_comfort = current_house["comfort"]
+        house_cost = current_house["cost"]
+
+        # Draw the house sprite
+        graphics.draw_sprite_at(
+            graphics.matrix_width // 4 - 5,
+            graphics.matrix_height // 4,
+            current_house["sprite"],
+            sprite_width=48,
+            sprite_height=24,
+        )
+
+        # Display house details
+        text = f"{house_name}"
+        text_matrix = text_to_matrix(text, "assets/fonts/tamzen.ttf", 10, graphics.matrix_width, graphics.matrix_height)
+        graphics.draw_matrix(text_matrix, graphics.matrix_width // 2 - len(text_matrix[0]) // 2 + 2, -2)
+
+    def draw_housing_reaction_game(self, housing_state, graphics, fps):
+        """
+        Render the different phases of the housing reaction game.
+        """
+        graphics.clear_screen()
+
+        if housing_state["countdown_active"]:
+            # Display countdown timer
+            countdown_number = max(0, int(housing_state["countdown_timer"]))
+            countdown_matrix = text_to_matrix(
+                str(countdown_number), "assets/fonts/tamzen.ttf", 20,
+                graphics.matrix_width, graphics.matrix_height
+            )
+            graphics.draw_matrix(
+                countdown_matrix,
+                graphics.matrix_width // 2 - len(countdown_matrix[0]) // 2,
+                graphics.matrix_height // 2 - len(countdown_matrix) // 2,
+            )
+
+
+        elif housing_state["reaction_active"]:
+            # Display "APPLY" prompt
+            reaction_text = "APPLY"
+            reaction_matrix = text_to_matrix(
+                reaction_text, "assets/fonts/tamzen.ttf", 14,
+                graphics.matrix_width, graphics.matrix_height
+            )
+            graphics.draw_matrix(
+                reaction_matrix,
+                graphics.matrix_width // 2 - len(reaction_matrix[0]) // 2,
+                graphics.matrix_height // 2 - len(reaction_matrix) // 2,
+            )
+
+        elif housing_state["reaction_result"] is not None:
+            # Display Pass/Fail result
+            result_text = "SUCCESS" if housing_state["reaction_result"] == "pass" else "FAILED"
+            result_matrix = text_to_matrix(
+                result_text, "assets/fonts/tamzen.ttf", 14,
+                graphics.matrix_width, graphics.matrix_height
+            )
+            graphics.draw_matrix(
+                result_matrix,
+                graphics.matrix_width // 2 - len(result_matrix[0]) // 2,
+                graphics.matrix_height // 2 - len(result_matrix) // 2,
+            )
+
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""

@@ -6,6 +6,7 @@ from core.stats import Stats
 from core.minigames.platformer import update_platforms, check_goal_reached, handle_input, draw_platformer, calculate_jump_curve
 from core.minigames.education import handle_education_input, render_education_screen
 from core.minigames.social import handle_social_input, initialize_socializing
+from core.minigames.housing import initialize_housing, handle_housing_input
 
 # Constants
 MATRIX_WIDTH = 64
@@ -103,6 +104,33 @@ def main():
             if states.platformer_state["minigame_ended"]:
                 states.reset_platformer()
                 states.transition_to_screen("home_screen")
+
+        elif states.current_screen == "housing_screen":
+            if not states.housing_state:
+                states.housing_state = initialize_housing()
+
+            # Handle input and update the housing state
+            handle_housing_input(states.housing_state, controls, FPS)
+
+            # Render the appropriate housing screen
+            if (
+                states.housing_state["countdown_active"]
+                or states.housing_state["random_timeout_active"]
+                or states.housing_state["reaction_active"]
+                or states.housing_state["reaction_result"] is not None
+            ):
+                graphics.draw_housing_reaction_game(states.housing_state, graphics, FPS)
+            else:
+                graphics.draw_housing_screen(states.housing_state, graphics)
+
+            # Allow the user to stay on the result screen until they press the left button
+            if states.housing_state["reaction_result"] is not None and not states.housing_state["reaction_active"]:
+                if controls.left_button:
+                    # Transition back to the home screen only when the left button is pressed
+                    print(f"Reaction result: {states.housing_state['reaction_result']}")
+                    states.transition_to_screen("home_screen")
+                    states.housing_state = None
+
 
         elif states.current_screen in states.point_screens:
             graphics.clear_screen()

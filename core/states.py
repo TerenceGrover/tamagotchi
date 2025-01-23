@@ -11,6 +11,7 @@ class States:
         self.animation_frame = None
         self.selected_level = None
         self.student_loan = None
+        self.housing_state = None
         self.point_screens = [
             "food_screen", "housing_screen", "socialize_screen", 
             "education_screen", "job_screen", "hobby_screen"

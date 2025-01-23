@@ -21,8 +21,6 @@ def initialize_socializing(graphics):
         "tama_animation_offset": 0,  # Up/down offset for Tamas
     }
 
-
-
 def handle_social_input(social_state, controls, stats):
     """
     Handle user input for the socializing game.

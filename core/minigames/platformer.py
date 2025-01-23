@@ -1,7 +1,6 @@
 import random
 import pygame
 
-
 def initialize_platformer(money_stats):
     """
     Initialize platformer game variables.
