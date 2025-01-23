@@ -119,9 +119,9 @@ def main():
                 or states.housing_state["reaction_active"]
                 or states.housing_state["reaction_result"] is not None
             ):
-                graphics.draw_housing_reaction_game(states.housing_state, graphics, FPS)
+                graphics.draw_housing_reaction_game(states.housing_state, FPS)
             else:
-                graphics.draw_housing_screen(states.housing_state, graphics)
+                graphics.draw_housing_screen(states.housing_state)
 
             # Allow the user to stay on the result screen until they press the left button
             if states.housing_state["reaction_result"] is not None and not states.housing_state["reaction_active"]:

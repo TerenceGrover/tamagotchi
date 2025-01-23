@@ -439,7 +439,7 @@ class Graphics:
         # Increment animation frames
         social_state["animation_frames"] += 1
 
-    def draw_housing_screen(self, housing_state, graphics):
+    def draw_housing_screen(self, housing_state):
         self.clear_screen()
 
         # Get the current house
@@ -449,9 +449,9 @@ class Graphics:
         house_cost = current_house["cost"]
 
         # Draw the house sprite
-        graphics.draw_sprite_at(
-            graphics.matrix_width // 4 - 5,
-            graphics.matrix_height // 4,
+        self.draw_sprite_at(
+            self.matrix_width // 4 - 5,
+            self.matrix_height // 4,
             current_house["sprite"],
             sprite_width=48,
             sprite_height=24,
@@ -459,40 +459,32 @@ class Graphics:
 
         # Display house details
         text = f"{house_name}"
-        text_matrix = text_to_matrix(text, "assets/fonts/tamzen.ttf", 10, graphics.matrix_width, graphics.matrix_height)
-        graphics.draw_matrix(text_matrix, graphics.matrix_width // 2 - len(text_matrix[0]) // 2 + 2, -2)
+        text_matrix = text_to_matrix(text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
+        self.draw_matrix(text_matrix, self.matrix_width // 2 - len(text_matrix[0]) // 2 + 2, -2)
 
-    def draw_housing_reaction_game(self, housing_state, graphics, fps):
+    def draw_housing_reaction_game(self, housing_state, fps):
         """
-        Render the different phases of the housing reaction game.
+        Render the different phases of the housing reaction game with animated feedback.
         """
-        graphics.clear_screen()
+        self.clear_screen()
 
-        if housing_state["countdown_active"]:
+        if housing_state["countdown_active"] or housing_state["random_timeout_active"]:
             # Display countdown timer
             countdown_number = max(0, int(housing_state["countdown_timer"]))
-            countdown_matrix = text_to_matrix(
-                str(countdown_number), "assets/fonts/tamzen.ttf", 20,
-                graphics.matrix_width, graphics.matrix_height
-            )
-            graphics.draw_matrix(
-                countdown_matrix,
-                graphics.matrix_width // 2 - len(countdown_matrix[0]) // 2,
-                graphics.matrix_height // 2 - len(countdown_matrix) // 2,
-            )
-
+            countdown_matrix = text_to_matrix(str(countdown_number), "assets/fonts/tamzen.ttf", 20, self.matrix_width, self.matrix_height)
+            self.draw_matrix(countdown_matrix, self.matrix_width // 2 - 5, self.matrix_height // 2 - 10)
 
         elif housing_state["reaction_active"]:
             # Display "APPLY" prompt
             reaction_text = "APPLY"
             reaction_matrix = text_to_matrix(
                 reaction_text, "assets/fonts/tamzen.ttf", 14,
-                graphics.matrix_width, graphics.matrix_height
+                self.matrix_width, self.matrix_height
             )
-            graphics.draw_matrix(
+            self.draw_matrix(
                 reaction_matrix,
-                graphics.matrix_width // 2 - len(reaction_matrix[0]) // 2,
-                graphics.matrix_height // 2 - len(reaction_matrix) // 2,
+                self.matrix_width // 4,
+                self.matrix_height // 4,
             )
 
         elif housing_state["reaction_result"] is not None:
@@ -500,13 +492,48 @@ class Graphics:
             result_text = "SUCCESS" if housing_state["reaction_result"] == "pass" else "FAILED"
             result_matrix = text_to_matrix(
                 result_text, "assets/fonts/tamzen.ttf", 14,
-                graphics.matrix_width, graphics.matrix_height
+                self.matrix_width, self.matrix_height
             )
-            graphics.draw_matrix(
+            self.draw_matrix(
                 result_matrix,
-                graphics.matrix_width // 2 - len(result_matrix[0]) // 2,
-                graphics.matrix_height // 2 - len(result_matrix) // 2,
+                self.matrix_width // 4 - 8,
+                self.matrix_height // 4,
             )
+
+            # Handle animated tick/cross sprites
+            animation_frame = int(pygame.time.get_ticks() / 200) % 5  # Loop: 0, 1, 2, 3, 4
+            if animation_frame == 4:  # Convert loop to: 1, 2, 3, 2, 1
+                sprite_index = 2
+            else:
+                sprite_index = min(3, animation_frame + 1)
+
+            sprite_prefix = "tick" if housing_state["reaction_result"] == "pass" else "cross"
+            sprite_path = f"assets/sprites/{sprite_prefix}{sprite_index}.png"
+
+            # Draw animated sprites on either side of the text
+            sprite_width, sprite_height = 12, 12
+            result_text_width = len(result_matrix[0])
+            text_center_x = self.matrix_width // 2 - result_text_width // 2
+            text_center_y = self.matrix_height // 2 - len(result_matrix) // 2
+
+            # Draw the left sprite
+            self.draw_sprite_at(
+                self.matrix_width // 2 + 8,
+                self.matrix_height // 2 + 2,
+                sprite_path,
+                sprite_width=sprite_width,
+                sprite_height=sprite_height,
+            )
+
+            # Draw the right sprite
+            self.draw_sprite_at(
+                self.matrix_width // 4 - 7,
+                self.matrix_height // 4 - 7,
+                sprite_path,
+                sprite_width=sprite_width,
+                sprite_height=sprite_height,
+            )
+
 
 
     def clear_screen(self):
