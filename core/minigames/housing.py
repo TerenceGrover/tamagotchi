@@ -1,25 +1,4 @@
 import time
-import pygame
-
-def initialize_housing():
-    return {
-        "housing_options": [
-            {"name": "Crack House", "sprite": "assets/sprites/housing/crack_house.png", "comfort": 10, "cost": 100},
-            {"name": "Apartment", "sprite": "assets/sprites/housing/apartment.png", "comfort": 30, "cost": 500},
-            {"name": "House", "sprite": "assets/sprites/housing/house.png", "comfort": 80, "cost": 2000},
-        ],
-        "current_choice": 0,
-        "house_selected": False,
-        "countdown_active": False,
-        "reaction_active": False,
-        "reaction_start_time": None,
-        "reaction_threshold": None,
-        "reaction_result": None,  # Pass or fail
-        "countdown_timer": 3,  # Start with a 5-second countdown
-    }
-
-
-import time
 import random
 import pygame
 
@@ -60,7 +39,7 @@ def reset_housing_state(housing_state):
         "random_timeout_start",
     ]
     for key in keys_to_reset:
-        housing_state[key] = None if key.endswith("_start") else False
+        housing_state[key] = None if (key.endswith("_start") or key.endswith('_result')) else False
 
     # Reset countdown and timer-specific values explicitly
     housing_state["countdown_timer"] = 3  # Reset countdown to initial value

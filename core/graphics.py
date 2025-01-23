@@ -487,7 +487,7 @@ class Graphics:
                 self.matrix_height // 4,
             )
 
-        elif housing_state["reaction_result"] is (not None or False):
+        elif housing_state["reaction_result"] is not None:
             # Display Pass/Fail result
             result_text = "SUCCESS" if housing_state["reaction_result"] == "pass" else "FAILED"
             result_matrix = text_to_matrix(
