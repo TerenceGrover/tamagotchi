@@ -43,6 +43,28 @@ def initialize_housing():
         "random_timeout_start": None,  # When the random timeout began
     }
 
+def reset_housing_state(housing_state):
+    """
+    Reset all the dynamic states in the housing_state to their initial values.
+    """
+    keys_to_reset = [
+        "house_selected",
+        "countdown_active",
+        "reaction_active",
+        "reaction_start_time",
+        "reaction_threshold",
+        "reaction_result",
+        "countdown_timer",
+        "random_timeout_active",
+        "random_timeout_duration",
+        "random_timeout_start",
+    ]
+    for key in keys_to_reset:
+        housing_state[key] = None if key.endswith("_start") else False
+
+    # Reset countdown and timer-specific values explicitly
+    housing_state["countdown_timer"] = 3  # Reset countdown to initial value
+
 
 def handle_housing_input(housing_state, controls, fps, states):
     """
@@ -51,6 +73,7 @@ def handle_housing_input(housing_state, controls, fps, states):
 
     if controls.left_button:
         states.transition_to_screen("home_screen")
+        reset_housing_state(housing_state)  # Use the helper function to reset the state
         return
 
     if not housing_state["house_selected"]:
