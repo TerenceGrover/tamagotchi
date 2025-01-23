@@ -44,10 +44,15 @@ def initialize_housing():
     }
 
 
-def handle_housing_input(housing_state, controls, fps):
+def handle_housing_input(housing_state, controls, fps, states):
     """
     Handle the housing state input and update game logic.
     """
+
+    if controls.left_button:
+        states.transition_to_screen("home_screen")
+        return
+
     if not housing_state["house_selected"]:
         # Cycle through housing options
         if controls.right_button:
@@ -69,8 +74,6 @@ def handle_housing_input(housing_state, controls, fps):
             housing_state["random_timeout_active"] = True
             housing_state["random_timeout_duration"] = random.uniform(0.1, 6.0)  # Random timeout duration
             housing_state["random_timeout_start"] = time.time()
-        if controls.center_button:
-            housing_state["reaction_result"] = "fail"
 
     elif housing_state["random_timeout_active"]:
         # Handle random timeout logic
@@ -84,8 +87,6 @@ def handle_housing_input(housing_state, controls, fps):
             selected_house = housing_state["housing_options"][housing_state["current_choice"]]
             comfort = selected_house["comfort"]
             housing_state["reaction_threshold"] = max(1.0, 3.0 - (comfort / 20))  # Example formula
-        if controls.center_button:
-            housing_state["reaction_result"] = "fail"
 
     elif housing_state["reaction_active"]:
         # Handle reaction timing

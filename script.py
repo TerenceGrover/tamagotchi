@@ -109,8 +109,16 @@ def main():
             if not states.housing_state:
                 states.housing_state = initialize_housing()
 
+            if (states.housing_state["countdown_active"] or states.housing_state["random_timeout_active"]) and controls.center_button:
+                # Fail the game due to early button press
+                states.housing_state["reaction_result"] = "fail"
+                states.housing_state["countdown_active"] = False
+                states.housing_state["random_timeout_active"] = False
+                states.housing_state["reaction_active"] = False
+                print("Game failed due to early button press!")
+
             # Handle input and update the housing state
-            handle_housing_input(states.housing_state, controls, FPS)
+            handle_housing_input(states.housing_state, controls, FPS, states)
 
             # Render the appropriate housing screen
             if (
@@ -130,7 +138,6 @@ def main():
                     print(f"Reaction result: {states.housing_state['reaction_result']}")
                     states.transition_to_screen("home_screen")
                     states.housing_state = None
-
 
         elif states.current_screen in states.point_screens:
             graphics.clear_screen()

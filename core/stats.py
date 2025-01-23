@@ -49,7 +49,6 @@ class Stats:
         stats_right = [
             f"So:{self.stats['social']}",
             f"E:{self.stats['esteem']}",
-            f"Edu:{self.stats['education'] or 'N/A'}"
         ]
 
         total_rows = max(len(stats_left), len(stats_right))
