@@ -26,7 +26,7 @@ def game_loop(screen, screen_width, screen_height, pixel_size, fps):
         controls.handle_input()
 
         # Clear the screen
-        graphics.clear_screen()
+        # graphics.clear_screen()
 
         # Determine the current screen to render
         current_state = states.current_state

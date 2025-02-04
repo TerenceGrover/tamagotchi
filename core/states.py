@@ -1,7 +1,7 @@
 class States:
     def __init__(self):
         self.current_screen = "home_screen"  # Default screen
-        self.stage_of_life = "egg"          # Default stage
+        self.stage_of_life = "adult"          # Default stage
         self.character = "whore1"          # Default character
 
     def transition_to_screen(self, new_screen):
@@ -19,4 +19,4 @@ class States:
         Returns:
             str: Path to the sprite folder.
         """
-        return f"assets/sprites/{self.character}/{self.stage_of_life}"
+        return f"assets/"

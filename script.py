@@ -41,7 +41,7 @@ def main():
         controls.handle_input()
 
         # Clear the screen
-        graphics.clear_screen()
+        # graphics.clear_screen()
 
         # Handle screens
         if states.current_screen == "home_screen":

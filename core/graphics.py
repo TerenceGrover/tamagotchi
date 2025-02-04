@@ -44,15 +44,15 @@ class Graphics:
         if current_time - self.last_move_time > self.pause_duration:
             direction = random.choice(["left", "right", "up", "down"])
             if direction == "left" and self.position[0] > 0:
-                self.position[0] -= 1
+                self.position[0] -= 2
             elif direction == "right" and self.position[0] < self.matrix_width - 10:
-                self.position[0] += 1
+                self.position[0] += 2
             elif direction == "up" and self.position[1] > 0:
-                self.position[1] -= 1
+                self.position[1] -= 2
             elif direction == "down" and self.position[1] < self.matrix_height - 10:
-                self.position[1] += 1
+                self.position[1] += 2
             self.last_move_time = current_time
-            self.pause_duration = random.uniform(1, 3)
+            self.pause_duration = 0.1
 
     def draw_sprite(self):
         sprite_matrix = self.sprites[self.current_sprite_index]
