@@ -20,7 +20,10 @@ def initialize_housing():
         "random_timeout_active": False,  # Tracks random timeout
         "random_timeout_duration": None,  # Duration of the random timeout
         "random_timeout_start": None,  # When the random timeout began
+        "pending": False,  # Tracks if a housing application is pending
+        "pending_start_time": None,  # When the pending state began
     }
+
 
 def reset_housing_state(housing_state):
     """
@@ -54,6 +57,13 @@ def handle_housing_input(housing_state, controls, fps, states):
         states.transition_to_screen("home_screen")
         reset_housing_state(housing_state)  # Use the helper function to reset the state
         return
+    
+    if housing_state["pending"]:
+        # If in a pending state, pressing the left button resets the state
+        if controls.left_button or controls.center_button or controls.right_button:
+            states.transition_to_screen("home_screen")
+            reset_housing_state(housing_state)  # Use the helper function to reset the state
+            return
 
     if not housing_state["house_selected"]:
         # Cycle through housing options

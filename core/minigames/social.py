@@ -21,10 +21,11 @@ def initialize_socializing(graphics):
         "tama_animation_offset": 0,  # Up/down offset for Tamas
     }
 
-def handle_social_input(social_state, controls, stats):
+def handle_social_input(states, social_state, controls, stats):
     """
     Handle user input for the socializing game.
     """
+
     if not social_state["interaction_done"]:
         # Cycle through player options
         if controls.right_button:
@@ -62,6 +63,11 @@ def handle_social_input(social_state, controls, stats):
             # Set interaction as done and reset animation
             social_state["interaction_done"] = True
             social_state["animation_frames"] = 0
+
+        if controls.left_button:
+            states.transition_to_screen("home_screen")
+            states.social_state = None
+            return
 
     else:
         # End round after animation

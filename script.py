@@ -74,17 +74,18 @@ def main():
             if not states.social_state:
                 states.social_state = initialize_socializing(graphics)
 
-            handle_social_input(states.social_state, controls, stats)
+            handle_social_input(states, states.social_state, controls, stats)
 
-            graphics.draw_social_screen(
-                player_sprites=graphics.sprites,
-                other_tama_sprite=states.social_state["other_tama_sprite"],
-                social_state=states.social_state,
-            )
+            if states.social_state:
+                graphics.draw_social_screen(
+                    player_sprites=graphics.sprites,
+                    other_tama_sprite=states.social_state["other_tama_sprite"],
+                    social_state=states.social_state,
+                )
 
-            if states.social_state["interaction_done"] and states.social_state["current_round"] > states.social_state["max_rounds"]:
-                states.transition_to_screen("home_screen")
-                states.social_state = None  # Reset the minigame state
+                if states.social_state["interaction_done"] and states.social_state["current_round"] > states.social_state["max_rounds"]:
+                    states.transition_to_screen("home_screen")
+                    states.social_state = None  # Reset the minigame state
 
         elif states.current_screen == "food_screen":
             if not states.platformer_state:

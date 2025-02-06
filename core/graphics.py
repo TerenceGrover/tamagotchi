@@ -442,25 +442,30 @@ class Graphics:
     def draw_housing_screen(self, housing_state):
         self.clear_screen()
 
-        # Get the current house
-        current_house = housing_state["housing_options"][housing_state["current_choice"]]
-        house_name = current_house["name"]
-        house_comfort = current_house["comfort"]
-        house_cost = current_house["cost"]
+        if housing_state["pending"]:
+            # Show "Pending" message
+            pending_text = "Pending..."
+            pending_matrix = text_to_matrix(pending_text, "assets/fonts/tamzen.ttf", 14, self.matrix_width, self.matrix_height)
+            self.draw_matrix(pending_matrix, self.matrix_width // 2 - len(pending_matrix[0]) // 2, self.matrix_height // 2 - 5)
+        
+        else:
+            # Get the current house
+            current_house = housing_state["housing_options"][housing_state["current_choice"]]
+            house_name = current_house["name"]
 
-        # Draw the house sprite
-        self.draw_sprite_at(
-            self.matrix_width // 4 - 5,
-            self.matrix_height // 4,
-            current_house["sprite"],
-            sprite_width=48,
-            sprite_height=24,
-        )
+            # Draw the house sprite
+            self.draw_sprite_at(
+                self.matrix_width // 4 - 5,
+                self.matrix_height // 4,
+                current_house["sprite"],
+                sprite_width=48,
+                sprite_height=24,
+            )
 
-        # Display house details
-        text = f"{house_name}"
-        text_matrix = text_to_matrix(text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
-        self.draw_matrix(text_matrix, self.matrix_width // 2 - len(text_matrix[0]) // 2 + 2, -2)
+            # Display house details
+            text = f"{house_name}"
+            text_matrix = text_to_matrix(text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
+            self.draw_matrix(text_matrix, self.matrix_width // 2 - len(text_matrix[0]) // 2 + 2, -2)
 
     def draw_housing_reaction_game(self, housing_state, fps):
         """
