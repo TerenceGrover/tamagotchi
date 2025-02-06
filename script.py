@@ -51,12 +51,16 @@ def main():
 
         # Screen-specific rendering
         if states.current_screen == "home_screen":
-            graphics.draw_home_screen(states.selected_point_index)
+            graphics.draw_home_screen(states.selected_point_index, states)
 
             if controls.right_button:
                 states.cycle_point()
             elif controls.center_button:
-                states.transition_to_screen(states.get_current_screen_from_point())
+                selected_screen = states.get_current_screen_from_point()
+                if states.is_screen_available(selected_screen):
+                    states.transition_to_screen(selected_screen)
+                else:
+                    print(f"Cannot access {selected_screen} at this stage!")
             elif controls.left_button:
                 states.transition_to_screen("stats_screen")
 

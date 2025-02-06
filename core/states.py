@@ -12,16 +12,22 @@ class States:
         self.selected_level = None
         self.student_loan = 0
         self.housing_state = None
-        self.point_screens = [
-            "food_screen", "housing_screen", "socialize_screen", 
-            "education_screen", "job_screen", "hobby_screen"
-        ]
+        self.point_screens = ["education_screen", "hobby_screen", "food_screen",  
+                      "socialize_screen", "job_screen", "housing_screen"]
+
         self.platformer_state = None  # Holds platformer game state
+
+        self.all_screens = {
+            "egg": ["stats_screen"],
+            "small": ["stats_screen", "education_screen", "food_screen", "socialize_screen", "hobby_screen"],
+            "adult": ["stats_screen", "education_screen", "food_screen", "socialize_screen", "hobby_screen", "job_screen", "housing_screen"],
+            "dead": []  # No screens accessible
+        }
 
         # Age-related properties
         self.age = 0
         self.start_time = time.time()
-        self.life_stages = {"egg": 10, "small": 30, "adult": 60}  # Age thresholds
+        self.life_stages = {"egg": 0, "small": 40, "adult": 90}  # Age thresholds
 
     def update_life_stage(self):
         """
@@ -87,3 +93,16 @@ class States:
         Reset the platformer minigame.
         """
         self.platformer_state = None
+
+
+    def get_available_screens(self):
+        """
+        Get the list of available screens based on the life stage.
+        """
+        return self.all_screens[self.stage_of_life]
+
+    def is_screen_available(self, screen_name):
+        """
+        Check if a screen is available based on the current life stage.
+        """
+        return screen_name in self.get_available_screens()

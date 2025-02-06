@@ -153,41 +153,45 @@ class Graphics:
                     )
 
 
-    def draw_frame_and_points(self, selected_point_index):
+    def draw_frame_and_points(self, selected_point_index, states):
         """
-        Draw the frame and points, with the selected point flashing.
+        Draw the frame and points, with unavailable points greyed out.
         """
-        # Frame drawing code remains the same
         self.draw_frame()
 
         # Define the points
         top_points = [
-            (self.frame_x + self.frame_width // 7, self.frame_y - 2),
-            (self.frame_x + self.frame_width // 2, self.frame_y - 2),
-            (self.frame_x + 6 * self.frame_width // 7, self.frame_y - 2),
+            (self.frame_x + self.frame_width // 7, self.frame_y - 2),   # education
+            (self.frame_x + self.frame_width // 2, self.frame_y - 2),   # job
+            (self.frame_x + 6 * self.frame_width // 7, self.frame_y - 2)  # food
         ]
         bottom_points = [
-            (self.frame_x + self.frame_width // 7, self.frame_y + self.frame_height + 1),
-            (self.frame_x + self.frame_width // 2, self.frame_y + self.frame_height + 1),
-            (self.frame_x + 6 * self.frame_width // 7, self.frame_y + self.frame_height + 1),
+            (self.frame_x + self.frame_width // 7, self.frame_y + self.frame_height + 1),  # social
+            (self.frame_x + self.frame_width // 2, self.frame_y + self.frame_height + 1),  # hobby
+            (self.frame_x + 6 * self.frame_width // 7, self.frame_y + self.frame_height + 1)  # housing
         ]
+        
         all_points = top_points + bottom_points
+        point_screens = ["education_screen", "hobby_screen", "food_screen",  # Top row
+                 "socialize_screen", "job_screen", "housing_screen"]  # Bottom row
 
-        # Draw the points
+
         current_time = time.time()
         for i, (x, y) in enumerate(all_points):
-            # Determine if the point should flash
-            if i == selected_point_index and int(current_time * 2) % 2 == 0:
-                color = (0, 0, 0)  # Flashing makes the point "invisible"
+            screen_name = point_screens[i]
+            if states.is_screen_available(screen_name):
+                # Available screen - normal color
+                color = (255, 0, 0) if not (i == selected_point_index and int(current_time * 2) % 2 == 0) else (0, 0, 0)
             else:
-                color = (255, 0, 0)  # Red point
+                # Unavailable screen - greyed out
+                color = (100, 100, 100)  
 
-            # Draw the point
             pygame.draw.rect(
                 self.screen,
                 color,
                 (x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size),
             )
+
 
     def draw_matrix(self, matrix, start_x, start_y):
         """
@@ -222,15 +226,17 @@ class Graphics:
                     (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
                 )
 
-    def draw_home_screen(self, selected_point_index):
+    def draw_home_screen(self, selected_point_index, states):
         """
         Draw the home screen, including the frame and flashing points.
+        Unavailable games are greyed out.
         """
         self.clear_screen()
-        self.draw_frame_and_points(selected_point_index)
+        self.draw_frame_and_points(selected_point_index, states)
         self.switch_sprite()
         self.move_sprite()
         self.draw_sprite()
+
 
     def render_individual_screen(self, screen_name):
         """
