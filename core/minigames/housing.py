@@ -106,6 +106,7 @@ def handle_housing_input(housing_state, controls, fps, states):
         if controls.center_button:  # Player reacts
             if reaction_time <= housing_state["reaction_threshold"]:
                 housing_state["reaction_result"] = "pass"
+                housing_state["pending"] = True
                 print("Reaction success!")
             else:
                 housing_state["reaction_result"] = "fail"

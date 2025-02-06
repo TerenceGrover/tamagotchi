@@ -29,7 +29,7 @@ class Stats:
                 self.stats[stat] = max(0, self.stats[stat] - self.decay_rates[stat])
             self.last_update_time = current_time
 
-    def update_education_stats(self, education_level, student_loan):
+    def update_education_stats(self, education_level, student_loan = 0):
         """
         Update the education and money stats based on the chosen education level and loan.
 

@@ -10,7 +10,7 @@ class States:
         self.selected_point_index = 0  # Default point selection
         self.animation_frame = None
         self.selected_level = None
-        self.student_loan = None
+        self.student_loan = 0
         self.housing_state = None
         self.point_screens = [
             "food_screen", "housing_screen", "socialize_screen", 

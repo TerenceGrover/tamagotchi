@@ -5,6 +5,12 @@ def handle_education_input(stats, states, controls):
     """
     Handle input and navigation logic for the education mini-game.
     """
+
+    if controls.left_button:
+        stats.update_education_stats(states.selected_level, states.student_loan)
+        states.transition_to_screen("home_screen")
+        return
+
     if states.animation_frame is None:
         # Navigate between suitcases
         if controls.right_button:
