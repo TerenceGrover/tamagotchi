@@ -119,7 +119,7 @@ def main():
                 print("Game failed due to early button press!")
 
             # Handle input and update the housing state
-            handle_housing_input(states.housing_state, controls, FPS, states)
+            handle_housing_input(states.housing_state, stats, controls, FPS, states)
 
             # Render the appropriate housing screen
             if (

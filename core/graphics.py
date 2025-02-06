@@ -443,6 +443,7 @@ class Graphics:
         self.clear_screen()
 
         if housing_state["pending"]:
+            print("Pending...")
             # Show "Pending" message
             pending_text = "Pending..."
             pending_matrix = text_to_matrix(pending_text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
@@ -520,8 +521,6 @@ class Graphics:
             # Draw animated sprites on either side of the text
             sprite_width, sprite_height = 12, 12
             result_text_width = len(result_matrix[0])
-            text_center_x = self.matrix_width // 2 - result_text_width // 2
-            text_center_y = self.matrix_height // 2 - len(result_matrix) // 2
 
             # Draw the left sprite
             self.draw_sprite_at(
