@@ -445,8 +445,10 @@ class Graphics:
         if housing_state["pending"]:
             # Show "Pending" message
             pending_text = "Pending..."
-            pending_matrix = text_to_matrix(pending_text, "assets/fonts/tamzen.ttf", 14, self.matrix_width, self.matrix_height)
-            self.draw_matrix(pending_matrix, self.matrix_width // 2 - len(pending_matrix[0]) // 2, self.matrix_height // 2 - 5)
+            pending_matrix = text_to_matrix(pending_text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
+            house_name_matrix = text_to_matrix(housing_state["housing_options"][housing_state["current_choice"]]["name"], "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
+            self.draw_matrix(pending_matrix, self.matrix_width // 2 - len(pending_matrix[0]) // 2, self.matrix_height // 2 - 10)
+            self.draw_matrix(house_name_matrix, self.matrix_width // 2 - len(house_name_matrix[0]) // 2, self.matrix_height // 2 + 5)
         
         else:
             # Get the current house
