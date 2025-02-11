@@ -23,7 +23,7 @@ def initialize_housing():
         "random_timeout_start": None,  # When the random timeout began
         "pending": False,  # Tracks if a housing application is pending
         "pending_start_time": None,  # When the pending state began
-        "current_home": {"name": "Crack House", "sprite": "assets/sprites/housing/crack_house.png", "comfort": 10, "cost": 100},  # Tracks the player's current home
+        "current_home": None,  # Tracks the player's current home
         "pending_wait_time": random.randint(15, 30),  # Time to wait before accepting or denying the application
     }
 
@@ -63,7 +63,7 @@ def handle_housing_input(housing_state, stats, controls, fps, states):
             states.transition_to_screen("home_screen")
             return
         
-        elif time.time() - housing_state["pending_start_time"] > housing_state["pending_wait_time"]:
+        elif time.time() - housing_state["pending_start_time"] > housing_state["pending_wait_time"] and housing_state["current_home"] is None:
     # Calculate housing acceptance based on probability
             probability = calculate_housing_acceptance(housing_state, stats)
             if random.random() < probability:
@@ -101,7 +101,7 @@ def handle_housing_input(housing_state, stats, controls, fps, states):
             housing_state["pending_start_time"] = time.time()
         return  # Prevent further interactions while animation is playing
 
-    if not housing_state["house_selected"]:
+    if not housing_state["house_selected"] and not housing_state["current_home"]:
         # Cycle through housing options
         if controls.right_button:
             housing_state["current_choice"] = (housing_state["current_choice"] + 1) % len(housing_state["housing_options"])

@@ -451,7 +451,6 @@ class Graphics:
 
         if housing_state["current_home"]:
             # ✅ Show current home status
-            home_name = housing_state["current_home"]["name"]
             home_matrix = text_to_matrix("Home", "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
 
             self.draw_matrix(home_matrix, self.matrix_width // 2 - len(home_matrix[0]) // 5, (self.matrix_height // 4) - 10)
