@@ -23,6 +23,7 @@ def initialize_housing():
         "random_timeout_start": None,  # When the random timeout began
         "pending": False,  # Tracks if a housing application is pending
         "pending_start_time": None,  # When the pending state began
+        "current_home": {"name": "Crack House", "sprite": "assets/sprites/housing/crack_house.png", "comfort": 10, "cost": 100},  # Tracks the player's current home
         "pending_wait_time": random.randint(15, 30),  # Time to wait before accepting or denying the application
     }
 
@@ -62,18 +63,29 @@ def handle_housing_input(housing_state, stats, controls, fps, states):
             states.transition_to_screen("home_screen")
             return
         
-        if time.time() - housing_state["pending_start_time"] > housing_state["pending_wait_time"]:
-            # Calculate housing acceptance based on probability
+        elif time.time() - housing_state["pending_start_time"] > housing_state["pending_wait_time"]:
+    # Calculate housing acceptance based on probability
             probability = calculate_housing_acceptance(housing_state, stats)
             if random.random() < probability:
+                # ✅ Application Accepted
+                selected_house = housing_state["housing_options"][housing_state["current_choice"]]
+                housing_state["current_home"] = selected_house  # Save the new home
                 housing_state["pending"] = False
                 housing_state["reaction_result"] = None
                 housing_state["application_result"] = "Accepted"
+
+                # 🏠 Apply housing effects
+                stats.modify_stat("rest", selected_house["comfort"] // 2)  # Better house → better rest
+                stats.modify_stat("safe", selected_house["comfort"] // 3)  # Better house → better safety
+                stats.modify_stat("money", -selected_house["cost"])  # Deduct money
+
+                print(f"✅ Moved into {selected_house['name']}. Rest +{selected_house['comfort'] // 2}, Safe +{selected_house['comfort'] // 3}, Money -${selected_house['cost']}")
             else:
+                # ❌ Application Denied
                 housing_state["pending"] = False
                 housing_state["reaction_result"] = None
                 housing_state["application_result"] = "Denied"
-        return  # Prevent further interactions while pending
+
         
     else: 
         if controls.left_button:

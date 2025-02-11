@@ -27,7 +27,7 @@ class States:
         # Age-related properties
         self.age = 0
         self.start_time = time.time()
-        self.life_stages = {"egg": 0, "small": 40, "adult": 90}  # Age thresholds
+        self.life_stages = {"egg": 0, "small": 0, "adult": 90}  # Age thresholds
 
     def update_life_stage(self):
         """

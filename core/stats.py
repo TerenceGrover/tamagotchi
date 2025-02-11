@@ -9,7 +9,7 @@ class Stats:
             "safe": 70,
             "social": 50,
             "esteem": 90,
-            "education": None,
+            "education": 0,
             "money": 100
         }
         self.last_update_time = time.time()
@@ -28,6 +28,11 @@ class Stats:
             for stat in self.decay_rates:
                 self.stats[stat] = max(0, self.stats[stat] - self.decay_rates[stat])
             self.last_update_time = current_time
+
+    def modify_stat(self, stat, amount):
+        if stat in self.stats:
+            self.stats[stat] = max(0, min(100, self.stats[stat] + amount))  # Keep within 0-100
+            print(f"Updated {stat}: {self.stats[stat]}")
 
     def update_education_stats(self, education_level, student_loan = 0):
         """

@@ -14,16 +14,16 @@ def calculate_housing_acceptance(housing_state, stats):
     probability = base_probability
 
     # Positive Factors
-    probability += stats.stats["income"] / 2000  # Higher income, better chance
+    # probability += stats.stats["income"] / 2000  # Higher income, better chance
     probability += stats.stats["education"] / 100  # Higher education = slight boost
     probability += stats.stats["social"] / 150  # Being more sociable helps
-    probability += 0.05 if stats.stats["job_stability"] else -0.10  # Stable job helps
+    # probability += 0.05 if stats.stats["job_stability"] else -0.10  # Stable job helps
 
 
     # Racial Bias Simulation (Purely for satirical effect)
-    if "skin_color" in stats.stats and "landlord_skin_color" in housing_state:
-        if stats.stats["skin_color"] != housing_state["landlord_skin_color"]:
-            probability -= 0.10  # Discrimination factor (sadly, a real thing)
+    # if "skin_color" in stats.stats and "landlord_skin_color" in housing_state:
+    #     if stats.stats["skin_color"] != housing_state["landlord_skin_color"]:
+    #         probability -= 0.10  # Discrimination factor (sadly, a real thing)
 
     # Random Landlord Mood
     probability += random.uniform(-0.10, 0.10)  # Landlord might just be feeling different today

@@ -446,20 +446,31 @@ class Graphics:
         social_state["animation_frames"] += 1
 
     def draw_housing_screen(self, housing_state):
+        current_house = housing_state["housing_options"][housing_state["current_choice"]]
         self.clear_screen()
 
-        if housing_state["pending"]:
-            print("Pending...")
+        if housing_state["current_home"]:
+            # ✅ Show current home status
+            home_name = housing_state["current_home"]["name"]
+            home_matrix = text_to_matrix("Home", "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
+
+            self.draw_matrix(home_matrix, self.matrix_width // 2 - len(home_matrix[0]) // 5, (self.matrix_height // 4) - 10)
+            self.draw_sprite_at(
+                self.matrix_width // 4 - 5,
+                self.matrix_height // 4,
+                current_house["sprite"],
+                sprite_width=48,
+                sprite_height=24,
+            )
+
+        elif housing_state["pending"]:
             # Show "Pending" message
             pending_text = "Pending..."
             pending_matrix = text_to_matrix(pending_text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
-            house_name_matrix = text_to_matrix(housing_state["housing_options"][housing_state["current_choice"]]["name"], "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
             self.draw_matrix(pending_matrix, self.matrix_width // 2 - len(pending_matrix[0]) // 2, self.matrix_height // 2 - 10)
-            self.draw_matrix(house_name_matrix, self.matrix_width // 2 - len(house_name_matrix[0]) // 2, self.matrix_height // 2 + 5)
-        
+
         else:
             # Get the current house
-            current_house = housing_state["housing_options"][housing_state["current_choice"]]
             house_name = current_house["name"]
 
             # Draw the house sprite
@@ -475,6 +486,8 @@ class Graphics:
             text = f"{house_name}"
             text_matrix = text_to_matrix(text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
             self.draw_matrix(text_matrix, self.matrix_width // 2 - len(text_matrix[0]) // 2 + 2, -2)
+
+
 
     def draw_housing_reaction_game(self, housing_state, fps):
         """
