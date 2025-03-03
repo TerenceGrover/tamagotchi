@@ -1,4 +1,5 @@
 import pygame
+import time
 from core.graphics import Graphics
 from core.controls import Controls
 from core.states import States
@@ -6,7 +7,8 @@ from core.stats import Stats
 from core.minigames.platformer import update_platforms, check_goal_reached, handle_input, draw_platformer, calculate_jump_curve
 from core.minigames.education import handle_education_input, render_education_screen
 from core.minigames.social import handle_social_input, initialize_socializing
-from core.minigames.housing import initialize_housing, handle_housing_input
+from core.minigames.housing import initialize_housing, handle_housing_input, assign_real_estate_agent
+from core.minigames.hobby import initialize_hobby, update_hobby
 
 # Constants
 MATRIX_WIDTH = 64
@@ -109,6 +111,23 @@ def main():
             if states.platformer_state["minigame_ended"]:
                 states.reset_platformer()
                 states.transition_to_screen("home_screen")
+        
+        elif states.current_screen == "hobby_screen":
+            if not states.hobby_state:
+                states.start_hobby()
+
+            if not states.hobby_state["game_over"]:
+                update_hobby(states.hobby_state, controls, stats)
+
+            graphics.draw_hobby_screen(states.hobby_state)
+
+            if states.hobby_state["game_over"]:
+                if controls.left_button:  # Exit the game on failure
+                    states.transition_to_screen("home_screen")
+                    states.hobby_state = None  # Reset the game state
+
+
+
 
         elif states.current_screen == "housing_screen":
             if not states.housing_state:
@@ -116,6 +135,7 @@ def main():
 
             if (states.housing_state["countdown_active"] or states.housing_state["random_timeout_active"]) and controls.center_button:
                 # Fail the game due to early button press
+                print("Game failed due to early button press!")
                 states.housing_state["reaction_result"] = "fail"
                 states.housing_state["countdown_active"] = False
                 states.housing_state["random_timeout_active"] = False
@@ -133,6 +153,9 @@ def main():
                 or states.housing_state["reaction_result"] is not None
             ):
                 graphics.draw_housing_reaction_game(states.housing_state, FPS)
+                if states.housing_state["real_estate_agent"] is None:
+                    assign_real_estate_agent(states.housing_state)
+
             else:
                 graphics.draw_housing_screen(states.housing_state)
 

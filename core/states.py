@@ -1,5 +1,7 @@
 import time
 from core.minigames.platformer import initialize_platformer
+from core.minigames.hobby import initialize_hobby  # Import Hobby Minigame
+# from core.minigames.job import initialize_job  # Placeholder for Job Minigame
 
 class States:
     def __init__(self):
@@ -12,10 +14,14 @@ class States:
         self.selected_level = None
         self.student_loan = 0
         self.housing_state = None
-        self.point_screens = ["education_screen", "hobby_screen", "food_screen",  
-                      "socialize_screen", "job_screen", "housing_screen"]
-
         self.platformer_state = None  # Holds platformer game state
+        self.hobby_state = None  # Holds hobby game state
+        self.job_state = None  # Holds job game state (to be implemented)
+
+        self.point_screens = [
+            "education_screen", "hobby_screen", "food_screen",  
+            "socialize_screen", "job_screen", "housing_screen"
+        ]
 
         self.all_screens = {
             "egg": ["stats_screen"],
@@ -94,6 +100,30 @@ class States:
         """
         self.platformer_state = None
 
+    def start_hobby(self):
+        """
+        Initialize the hobby rhythm-based minigame.
+        """
+        self.hobby_state = initialize_hobby()
+
+    def reset_hobby(self):
+        """
+        Reset the hobby minigame.
+        """
+        self.hobby_state = None
+
+    # def start_job(self):
+    #     """
+    #     Initialize the job mini-game (to be implemented).
+    #     """
+    #     if self.stage_of_life == "adult":
+    #         self.job_state = initialize_job()
+
+    def reset_job(self):
+        """
+        Reset the job mini-game (to be implemented).
+        """
+        self.job_state = None
 
     def get_available_screens(self):
         """

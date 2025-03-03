@@ -16,18 +16,17 @@ def initialize_housing():
         "reaction_start_time": None,
         "reaction_threshold": None,
         "reaction_result": None,  # Pass or fail
-        "reaction_result_display_time": None,  # Timestamp for when to remove result
+        "reaction_result_display_time": 0,  # Timestamp for when to remove result
         "countdown_timer": 3,  # Start with a 3-second countdown
         "random_timeout_active": False,  # Tracks random timeout
         "random_timeout_duration": None,  # Duration of the random timeout
         "random_timeout_start": None,  # When the random timeout began
         "pending": False,  # Tracks if a housing application is pending
-        "pending_start_time": None,  # When the pending state began
-        "current_home": None,  # Tracks the player's current home
-        "pending_wait_time": random.randint(15, 30),  # Time to wait before accepting or denying the application
+        "pending_start_time": None,
+        "current_home": None,
+        "pending_wait_time": random.randint(15, 30),
+        "real_estate_agent": None,
     }
-
-
 
 def reset_housing_state(housing_state):
     """
@@ -50,6 +49,25 @@ def reset_housing_state(housing_state):
 
     # Reset countdown and timer-specific values explicitly
     housing_state["countdown_timer"] = 3  # Reset countdown to initial value
+
+def assign_real_estate_agent(housing_state):
+    """
+    Assigns a random real estate agent to the transaction.
+    """
+    agent_skins = ["yellow", "orange", "green"]
+    agent_table = {
+        "green": 1,
+        "orange": 2,
+        "yellow": 3
+    }
+
+    # Pick a random skin first
+    chosen_skin = random.choice(agent_skins)
+    
+    housing_state["real_estate_agent"] = {
+        "skin_color": chosen_skin,
+        "sprite": f"assets/sprites/otherTama/tama{agent_table[chosen_skin]}.png",
+    }
 
 
 def handle_housing_input(housing_state, stats, controls, fps, states):
@@ -94,12 +112,35 @@ def handle_housing_input(housing_state, stats, controls, fps, states):
             return
 
     # Handle reaction result display duration
+    # Handle reaction result display duration
     if housing_state["reaction_result"] is not None:
-        if time.time() - housing_state["reaction_result_display_time"] > 2:  # Show animation for 2 seconds
-            housing_state["reaction_result"] = None
-            housing_state["pending"] = True  # Move to pending state
-            housing_state["pending_start_time"] = time.time()
+        print(f"Reaction result: {housing_state['reaction_result']}")  # Debug print
+
+        # Ensure reaction_result_display_time is set before using it
+        if housing_state["reaction_result_display_time"] is None:
+            housing_state["reaction_result_display_time"] = time.time()
+
+        # Wait before clearing the result
+        if time.time() - housing_state["reaction_result_display_time"] > 2:
+            if housing_state["reaction_result"] == "pass":
+                # ✅ Success → Move to pending state
+                housing_state["pending"] = True
+                housing_state["pending_start_time"] = time.time()
+                
+                # Clear result after animation
+                housing_state["reaction_result"] = None
+                housing_state["reaction_result_display_time"] = None  
+
+            elif housing_state["reaction_result"] == "fail":
+                # ❌ Failure → **Wait for player to press a button before resetting**
+                if controls.left_button or controls.center_button or controls.right_button:
+                    reset_housing_state(housing_state)
+                    housing_state["reaction_result"] = None  # Ensure it's cleared after reset
+                    housing_state["reaction_result_display_time"] = None   
+            
         return  # Prevent further interactions while animation is playing
+
+
 
     if not housing_state["house_selected"] and not housing_state["current_home"]:
         # Cycle through housing options
@@ -124,7 +165,7 @@ def handle_housing_input(housing_state, stats, controls, fps, states):
             housing_state["random_timeout_start"] = time.time()
 
     elif housing_state["random_timeout_active"]:
-        # Handle random timeout logic
+    # Handle random timeout logic
         elapsed_time = time.time() - housing_state["random_timeout_start"]
         if elapsed_time >= housing_state["random_timeout_duration"]:
             housing_state["random_timeout_active"] = False
@@ -136,9 +177,16 @@ def handle_housing_input(housing_state, stats, controls, fps, states):
             comfort = selected_house["comfort"]
             housing_state["reaction_threshold"] = max(1.0, 3.0 - (comfort / 20))  # Example formula
 
+            # 🏠 **Assign real estate agent at the start of reaction game**
+            if housing_state["real_estate_agent"] is None:
+                assign_real_estate_agent(housing_state)
+
+
     elif housing_state["reaction_active"]:
         # Handle reaction timing
+        print('reaction_active')
         reaction_time = time.time() - housing_state["reaction_start_time"]
+
         if controls.center_button:  # Player reacts
             if reaction_time <= housing_state["reaction_threshold"]:
                 housing_state["reaction_result"] = "pass"
@@ -150,9 +198,11 @@ def handle_housing_input(housing_state, stats, controls, fps, states):
             housing_state["reaction_active"] = False
             housing_state["reaction_result_display_time"] = time.time()  # Set time to delay clearing the result
 
-        elif reaction_time > housing_state["reaction_threshold"] + 1.0:  # 1-second grace period
-            housing_state["reaction_result"] = "fail"
-            print("Reaction failed (timeout)!")
-            housing_state["reaction_active"] = False
-            housing_state["reaction_result_display_time"] = time.time()  # Set time to delay clearing the result
+        elif reaction_time > housing_state["reaction_threshold"] + 0.5:
+            if housing_state["reaction_result"] is None:  # Ensure fail state is not overridden
+                housing_state["reaction_result"] = "fail"
+                print("Reaction failed (timeout)!")
+                housing_state["reaction_active"] = False
+                housing_state["reaction_result_display_time"] = time.time()  # Set time to delay clearing the result
+
 

@@ -4,6 +4,7 @@ from PIL import Image
 import pygame
 import os
 from utils.text_utils import text_to_matrix
+from core.minigames.hobby import HIT_ZONE_Y, BEAT_POSITIONS, NOTE_WIDTH
 
 class Graphics:
     def __init__(self, screen, matrix_width, matrix_height, pixel_size):
@@ -468,6 +469,11 @@ class Graphics:
             pending_matrix = text_to_matrix(pending_text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
             self.draw_matrix(pending_matrix, self.matrix_width // 2 - len(pending_matrix[0]) // 2, self.matrix_height // 2 - 10)
 
+            # 🏠 Draw Real Estate Agent (otherTama)
+            agent_x = self.matrix_width - 12  # Bottom-right corner
+            agent_y = self.matrix_height - 12
+            self.draw_sprite_at(agent_x, agent_y, housing_state["real_estate_agent"]["sprite"], sprite_width=10, sprite_height=10)
+
         else:
             # Get the current house
             house_name = current_house["name"]
@@ -515,6 +521,7 @@ class Graphics:
 
         elif housing_state["reaction_result"] is not None:
             # Display Pass/Fail result
+            print("reaction_result", housing_state["reaction_result"])
             result_text = "SUCCESS" if housing_state["reaction_result"] == "pass" else "FAILED"
             result_matrix = text_to_matrix(
                 result_text, "assets/fonts/tamzen.ttf", 14,
@@ -557,6 +564,52 @@ class Graphics:
                 sprite_width=sprite_width,
                 sprite_height=sprite_height,
             )
+
+    def draw_hobby_screen(self, hobby_state):
+        """
+        Draws the rhythm-based hobby game.
+        """
+        if hobby_state is None:
+            return
+
+        self.clear_screen()
+
+        # Draw hit zones for 3 buttons (left, center, right)
+        for x_pos in BEAT_POSITIONS:
+            pygame.draw.rect(
+                self.screen,
+                (255, 255, 255),  # White hit zones
+                (x_pos * self.pixel_size, HIT_ZONE_Y * self.pixel_size, NOTE_WIDTH * self.pixel_size, self.pixel_size),
+            )
+
+        # Draw falling beats
+        for beat in hobby_state["beats"]:
+            color = (0, 255, 0) if beat["hit"] else (255, 0, 0)  # Green if hit, Red otherwise
+            pygame.draw.rect(
+                self.screen,
+                color,
+                (
+                    beat["x"] * self.pixel_size,
+                    beat["y"] * self.pixel_size,
+                    NOTE_WIDTH * self.pixel_size,
+                    self.pixel_size,
+                ),
+            )
+
+        # Display only the score number at the top-left
+        score_text = str(hobby_state['score'])  # Only the number
+        highscore_text = str(hobby_state['high_score'])  # Only the number
+        score_matrix = text_to_matrix(score_text, "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
+        highscore_matrix = text_to_matrix(highscore_text, "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
+        self.draw_matrix(score_matrix, 1, 1)  # Small position at the top left
+        self.draw_matrix(highscore_matrix, 1, 12)  # Small position at the top left
+
+        # Draw "Game Over" if the player missed too many beats
+        if hobby_state["game_over"]:
+            game_over_matrix = text_to_matrix("Game Over", "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
+            self.draw_matrix(game_over_matrix, self.matrix_width // 6 - 5, self.matrix_height // 2)
+
+
 
 
 
