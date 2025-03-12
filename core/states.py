@@ -1,7 +1,7 @@
 import time
 from core.minigames.platformer import initialize_platformer
 from core.minigames.hobby import initialize_hobby  # Import Hobby Minigame
-# from core.minigames.job import initialize_job  # Placeholder for Job Minigame
+from core.minigames.job import initialize_job  # Placeholder for Job Minigame
 
 class States:
     def __init__(self):
@@ -112,12 +112,12 @@ class States:
         """
         self.hobby_state = None
 
-    # def start_job(self):
-    #     """
-    #     Initialize the job mini-game (to be implemented).
-    #     """
-    #     if self.stage_of_life == "adult":
-    #         self.job_state = initialize_job()
+    def start_job(self):
+        """
+        Initialize the job mini-game (to be implemented).
+        """
+        if self.stage_of_life == "adult":
+            self.job_state = initialize_job()
 
     def reset_job(self):
         """

@@ -9,6 +9,7 @@ from core.minigames.education import handle_education_input, render_education_sc
 from core.minigames.social import handle_social_input, initialize_socializing
 from core.minigames.housing import initialize_housing, handle_housing_input, assign_real_estate_agent
 from core.minigames.hobby import initialize_hobby, update_hobby
+from core.minigames.job import initialize_job, update_job, apply_job_rewards
 
 # Constants
 MATRIX_WIDTH = 64
@@ -126,7 +127,20 @@ def main():
                     states.transition_to_screen("home_screen")
                     states.hobby_state = None  # Reset the game state
 
-
+        elif states.current_screen == "job_screen":
+                if not states.job_state:
+                    # Assume education level is stored in stats.stats["education"]
+                    states.job_state = initialize_job(stats.stats["education"])
+                
+                if not states.job_state["completed"]:
+                    update_job(states.job_state, controls)
+                
+                graphics.draw_job_screen(states.job_state)  # You must implement draw_job_screen in your Graphics class
+                
+                if states.job_state["completed"]:
+                    apply_job_rewards(states.job_state, stats)
+                    states.transition_to_screen("home_screen")
+                    states.job_state = None  # Reset job minigame state
 
 
         elif states.current_screen == "housing_screen":

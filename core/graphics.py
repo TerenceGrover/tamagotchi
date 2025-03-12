@@ -609,8 +609,32 @@ class Graphics:
             game_over_matrix = text_to_matrix("Game Over", "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
             self.draw_matrix(game_over_matrix, self.matrix_width // 6 - 5, self.matrix_height // 2)
 
-
-
+    def draw_job_screen(self, job_state):
+        """
+        Render the job minigame screen.
+        Draw the desk items (using their PNG sprites) and the current task sequence.
+        """
+        self.clear_screen()
+        
+        # Draw desk items (spread evenly across the middle of the screen)
+        for idx, item_path in enumerate(job_state["items"]):
+            x_pos = (self.matrix_width // 5) + (idx * 16)  # Adjust spacing as needed
+            y_pos = self.matrix_height // 2 - (idx % 2) * 10  # Alternate rows
+            self.draw_sprite_at(x_pos, y_pos, item_path, sprite_width=10, sprite_height=10)
+        
+        # If currently showing the sequence, highlight the current item
+        if job_state["input_sequence"] == [] and job_state["sequence"]:
+            # Highlight the first unshown task from the sequence
+            current_task = job_state["sequence"][len(job_state["input_sequence"])]
+            # Map task (0, 1, 2) to one of the desk items' x positions
+            highlight_x = (self.matrix_width // 4) + (current_task * 16)
+            highlight_y = self.matrix_height // 2
+            # Draw a simple rectangle to indicate which task to remember
+            pygame.draw.rect(self.screen, (255, 255, 0), (highlight_x, highlight_y, self.pixel_size, self.pixel_size))
+        
+        # Optionally, display a simple progress bar at the top
+        progress = int((job_state["task_count"] / job_state["max_rounds"]) * self.matrix_width)
+        pygame.draw.rect(self.screen, (0, 255, 0), (0, 0, progress, 4))
 
 
     def clear_screen(self):
