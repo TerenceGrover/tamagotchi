@@ -1,4 +1,5 @@
 import time
+import math
 import random
 from PIL import Image
 import pygame
@@ -609,33 +610,56 @@ class Graphics:
             game_over_matrix = text_to_matrix("Game Over", "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
             self.draw_matrix(game_over_matrix, self.matrix_width // 6 - 5, self.matrix_height // 2)
 
+
     def draw_job_screen(self, job_state):
         """
         Render the job minigame screen.
-        Draw the desk items (using their PNG sprites) and the current task sequence.
+        Draw each desk item at a fixed position.
+        When in the "display" phase, animate the item corresponding to the next task in the sequence.
+        When in the "input_animation" phase, animate the desk item based on the player's input.
         """
         self.clear_screen()
         
-        # Draw desk items (spread evenly across the middle of the screen)
-        for idx, item_path in enumerate(job_state["items"]):
-            x_pos = (self.matrix_width // 5) + (idx * 16)  # Adjust spacing as needed
-            y_pos = self.matrix_height // 2 - (idx % 2) * 10  # Alternate rows
-            self.draw_sprite_at(x_pos, y_pos, item_path, sprite_width=10, sprite_height=10)
+        # Loop over the entire sequence (each element is an integer: 0,1,or 2)
+        for seq_index, task in enumerate(job_state["sequence"]):
+            # Determine static base position from the correct task value
+            base_x = (self.matrix_width // 5) + (task * 16)
+            base_y = self.matrix_height // 2 - (task % 2) * 10
+            
+            # Decide whether to animate this item.
+            animate = False
+            anim_value = None  # This will determine which sprite to use for animation
+            
+            if job_state["phase"] == "display" and seq_index == job_state.get("current_animation_index", 0):
+                animate = True
+                anim_value = task  # Show the correct task for display phase
+            elif job_state["phase"] == "input_animation" and seq_index == len(job_state["input_sequence"]):
+                animate = True
+                # In input_animation phase, use the player's last input value (which might differ from the correct task)
+                anim_value = job_state["last_input"]
+            
+            if animate:
+                # Create a wiggle & scale effect over a 1-second period.
+                t = time.time() % 1.0
+                offset = int(math.sin(t * 2 * math.pi))  # Oscillates ±2 pixels
+                scale_factor = 1.0 + 0.1 * math.sin(t * 2 * math.pi)
+                animated_width = max(1, int(10 * scale_factor))
+                animated_height = max(1, int(10 * scale_factor))
+                # Recalculate base_x and base_y based on the task to keep positions consistent
+                # (Note: You might adjust the formula if you want different vertical positions in input phase.)
+                animated_x = base_x - (animated_width - 10) // 2 - offset
+                animated_y = base_y - (animated_height - 10) // 2 + offset
+                print(job_state["items"][anim_value])
+                item_path = job_state["items"][anim_value]
+                self.draw_sprite_at(animated_x, animated_y, item_path, sprite_width=animated_width, sprite_height=animated_height)
+            else:
+                # Draw the static version of the desk item.
+                item_path = job_state["items"][task]
+                self.draw_sprite_at(base_x, base_y, item_path, sprite_width=10, sprite_height=10)
         
-        # If currently showing the sequence, highlight the current item
-        if job_state["input_sequence"] == [] and job_state["sequence"]:
-            # Highlight the first unshown task from the sequence
-            current_task = job_state["sequence"][len(job_state["input_sequence"])]
-            # Map task (0, 1, 2) to one of the desk items' x positions
-            highlight_x = (self.matrix_width // 4) + (current_task * 16)
-            highlight_y = self.matrix_height // 2
-            # Draw a simple rectangle to indicate which task to remember
-            pygame.draw.rect(self.screen, (255, 255, 0), (highlight_x, highlight_y, self.pixel_size, self.pixel_size))
-        
-        # Optionally, display a simple progress bar at the top
+        # (Optional) Draw a progress bar at the top.
         progress = int((job_state["task_count"] / job_state["max_rounds"]) * self.matrix_width)
         pygame.draw.rect(self.screen, (0, 255, 0), (0, 0, progress, 4))
-
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""

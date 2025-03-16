@@ -128,19 +128,21 @@ def main():
                     states.hobby_state = None  # Reset the game state
 
         elif states.current_screen == "job_screen":
-                if not states.job_state:
-                    # Assume education level is stored in stats.stats["education"]
-                    states.job_state = initialize_job(stats.stats["education"])
-                
-                if not states.job_state["completed"]:
-                    update_job(states.job_state, controls)
-                
-                graphics.draw_job_screen(states.job_state)  # You must implement draw_job_screen in your Graphics class
-                
-                if states.job_state["completed"]:
-                    apply_job_rewards(states.job_state, stats)
-                    states.transition_to_screen("home_screen")
-                    states.job_state = None  # Reset job minigame state
+            if not states.job_state:
+                # Use the education level from stats (or default to "HS" if not set)
+                education_level = stats.stats.get("education", "HS")
+                states.job_state = initialize_job(education_level)
+            
+            if not states.job_state["completed"]:
+                update_job(states.job_state, controls)
+            
+            graphics.draw_job_screen(states.job_state)
+            
+            if states.job_state["completed"]:
+                apply_job_rewards(states.job_state, stats)
+                states.transition_to_screen("home_screen")
+                states.job_state = None  # Reset the job minigame state
+
 
 
         elif states.current_screen == "housing_screen":
