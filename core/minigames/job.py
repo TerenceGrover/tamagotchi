@@ -56,17 +56,17 @@ def initialize_job(education_level):
     config = EDUCATION_CONFIG.get(education_level, EDUCATION_CONFIG["HS"])
     base_length = config["base_length"]
     return {
-        "items": config["items"],         # List of sprite paths for desk items
+        "items": config["items"],
         "sequence": generate_task_sequence(base_length),
         "input_sequence": [],
         "phase": "display",               # "display", "input", "feedback_success", "feedback_failure"
         "phase_start_time": time.time(),
-        "current_animation_index": 0,     # For displaying sequence items one by one
+        "current_animation_index": 0,
         "mistake_count": 0,
         "score": 0,
         "current_round": 1,
-        "task_count": base_length,        # Current sequence length
-        "max_rounds": 8,                  # When the workday is over
+        "task_count": base_length,
+        "max_rounds": 8,
         "completed": False,
         "high_score": 0,
     }

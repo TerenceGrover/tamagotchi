@@ -6,17 +6,18 @@ def initialize_platformer(money_stats):
     Initialize platformer game variables.
     """
     return {
-        "tama_position": [3, 10],  # Initial Tamagotchi position
-        "platforms": generate_platforms(5, 64, money_stats),  # Generate platforms dynamically
-        "goal_position": (60, 10),  # Goal position
-        "goal_area": (58, 8, 3, 3),  # Goal: (x, y, width, height)
+        "tama_position": [3, 10], 
+        "platforms": generate_platforms(5, 64, -10),
+        "goal_position": (60, 10),
+        "goal_area": (58, 8, 3, 3),  # x, y, width, height
         "platform_speed": .5,
         "minigame_ended": False,
         "jumping": False,
-        "jump_counter": 0,  # Timer for the jump animation
-        "jump_duration": 20,  # Duration of the jump (frames)
+        "jump_counter": 0,
+        "jump_duration": 20,  # frames
         "on_platform": False,
     }
+
 
 def generate_platforms(num_platforms, screen_width, money_stat):
     """
@@ -31,8 +32,8 @@ def generate_platforms(num_platforms, screen_width, money_stat):
         list: List of platforms [x, y, width].
     """
     # Cap the number of platforms to fit within the screen
-    max_platforms = screen_width // 10  # Ensure platforms have enough spacing
-    num_platforms = min(num_platforms + money_stat // 20, max_platforms)
+    max_platforms = screen_width // 10
+    num_platforms = min(num_platforms + money_stat // 50, max_platforms)
 
     platforms = []
     for i in range(num_platforms):
@@ -42,13 +43,11 @@ def generate_platforms(num_platforms, screen_width, money_stat):
             end_x = start_x + 5  # Ensure a minimum range for platform x
 
         x = random.randint(start_x, end_x)
-        y = random.randint(15, 30)  # Vertical positioning
-        width = random.randint(8, 25 + money_stat // 10)  # Platform width grows with money
+        y = random.randint(15, 30)
+        width = random.randint(8, 25 + money_stat // 10)
         platforms.append([x, y, width])
 
     return platforms
-
-
 
 
 def calculate_jump_curve(duration, peak_height):
@@ -59,6 +58,7 @@ def calculate_jump_curve(duration, peak_height):
         -4 * peak_height * ((t / duration) - 0.5) ** 2 + peak_height
         for t in range(duration + 1)
     ]
+
 
 def update_platforms(game_state, jump_curve):
     """
@@ -75,8 +75,7 @@ def update_platforms(game_state, jump_curve):
             platform[0] = 64
             platform[1] = random.randint(15, 30)
 
-    # Check collisions with platforms
-    was_on_platform = game_state["on_platform"]  # Track previous platform state
+    # Collision logic
     game_state["on_platform"] = False
     for platform_x, platform_y, platform_width in game_state["platforms"]:
         if (
@@ -84,13 +83,14 @@ def update_platforms(game_state, jump_curve):
             platform_y - 1 <= tama_feet_y <= platform_y + 1
         ):
             game_state["on_platform"] = True
-            if not game_state["jumping"]:  # Snap to platform if not jumping
+            if not game_state["jumping"]:
+                # Snapping logic to make it smoother baby
                 game_state["tama_position"][1] = platform_y - 5
             break
 
     # Gravity
     if not game_state["on_platform"] and not game_state["jumping"]:
-        game_state["tama_position"][1] += 1  # Apply gravity
+        game_state["tama_position"][1] += 1
 
     # Jumping logic
     if game_state["jumping"]:
@@ -106,7 +106,6 @@ def update_platforms(game_state, jump_curve):
 
     if game_state["tama_position"][1] == 34:
         game_state["minigame_ended"] = True
-
 
 
 def handle_input(game_state, controls, states, jump_curve):
@@ -127,9 +126,7 @@ def handle_input(game_state, controls, states, jump_curve):
     if controls.center_button and not game_state["jumping"] and game_state["on_platform"]:
         game_state["jumping"] = True
         game_state["jump_counter"] = 0
-        # Allow jumping even if currently on a platform
         game_state["on_platform"] = False
-
 
 
 def check_goal_reached(game_state, stats):
@@ -143,7 +140,6 @@ def check_goal_reached(game_state, stats):
     if goal_x - goal_width <= tama_x <= goal_x + goal_width and goal_y - goal_height <= tama_y <= goal_y + goal_height:
         game_state["minigame_ended"] = True
         stats.stats["food"] = min(stats.stats["food"] + 20, 100)  # Cap food at 100
-
 
 
 def draw_platformer(graphics, game_state, sprite_folder):

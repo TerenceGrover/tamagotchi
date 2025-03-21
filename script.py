@@ -15,6 +15,8 @@ from core.minigames.job import initialize_job, update_job, apply_job_rewards
 MATRIX_WIDTH = 64
 MATRIX_HEIGHT = 32
 PIXEL_SIZE = 20
+
+
 FPS = 30
 
 

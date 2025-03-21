@@ -15,13 +15,13 @@ def initialize_housing():
         "reaction_active": False,
         "reaction_start_time": None,
         "reaction_threshold": None,
-        "reaction_result": None,  # Pass or fail
-        "reaction_result_display_time": 0,  # Timestamp for when to remove result
-        "countdown_timer": 3,  # Start with a 3-second countdown
-        "random_timeout_active": False,  # Tracks random timeout
-        "random_timeout_duration": None,  # Duration of the random timeout
-        "random_timeout_start": None,  # When the random timeout began
-        "pending": False,  # Tracks if a housing application is pending
+        "reaction_result": None,
+        "reaction_result_display_time": 0, 
+        "countdown_timer": 3,
+        "random_timeout_active": False, 
+        "random_timeout_duration": None, 
+        "random_timeout_start": None, 
+        "pending": False,
         "pending_start_time": None,
         "current_home": None,
         "pending_wait_time": random.randint(15, 30),
