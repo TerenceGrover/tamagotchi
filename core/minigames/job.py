@@ -5,6 +5,7 @@ import time
 EDUCATION_CONFIG = {
     "HS": {
         "base_length": 3,
+        "max_rounds": 6,
         "items": [
             "assets/sprites/job/hs_item1.png",
             "assets/sprites/job/hs_item2.png",
@@ -13,6 +14,7 @@ EDUCATION_CONFIG = {
     },
     "BSc": {
         "base_length": 4,
+        "max_rounds": 7,
         "items": [
             "assets/sprites/job/bsc_item1.png",
             "assets/sprites/job/bsc_item2.png",
@@ -21,6 +23,7 @@ EDUCATION_CONFIG = {
     },
     "MSc": {
         "base_length": 5,
+        "max_rounds": 8,
         "items": [
             "assets/sprites/job/msc_item1.png",
             "assets/sprites/job/msc_item2.png",
@@ -29,6 +32,7 @@ EDUCATION_CONFIG = {
     },
     "PhD": {
         "base_length": 6,
+        "max_rounds": 9,
         "items": [
             "assets/sprites/job/phd_item1.png",
             "assets/sprites/job/phd_item2.png",
@@ -38,9 +42,10 @@ EDUCATION_CONFIG = {
 }
 
 # Timing constants
-ITEM_DISPLAY_DURATION = 1.0  # seconds to show each item during sequence display
-FEEDBACK_DURATION = 1.0      # seconds for green (success) or red (fail) flash
+ITEM_DISPLAY_DURATION = 0.5  # seconds to show each item during sequence display
+FEEDBACK_DURATION = 2.0      # seconds for green (success) or red (fail) flash
 REST_DECREASE = 20            # decrease in rest after completing a job
+PRE_ANIMATION_DELAY = 0.5
 
 def generate_task_sequence(task_count):
     """Generate a random sequence of tasks (each a number: 0, 1, or 2)."""
@@ -51,25 +56,28 @@ def generate_task_sequence(task_count):
 def initialize_job(education_level):
     """
     Initialize the job minigame state.
-    The education level influences the starting sequence length and available desk item sprites.
+    The education level influences the starting sequence length, available desk item sprites,
+    and the maximum rounds (i.e. workday length).
     """
     config = EDUCATION_CONFIG.get(education_level, EDUCATION_CONFIG["HS"])
     base_length = config["base_length"]
+    max_rounds = config.get("max_rounds", 8)  # Default to 8 if not provided
     return {
         "items": config["items"],
         "sequence": generate_task_sequence(base_length),
         "input_sequence": [],
-        "phase": "display",               # "display", "input", "feedback_success", "feedback_failure"
+        "phase": "idle",               # "idle", "display", "input", "feedback_success", "feedback_failure"
         "phase_start_time": time.time(),
         "current_animation_index": 0,
         "mistake_count": 0,
         "score": 0,
         "current_round": 1,
         "task_count": base_length,
-        "max_rounds": 8,
+        "max_rounds": max_rounds,
         "completed": False,
         "high_score": 0,
     }
+
 
 def update_job(job_state, controls):
     """
@@ -82,10 +90,14 @@ def update_job(job_state, controls):
     """
     current_time = time.time()
 
+    if job_state["phase"] == "idle":
+        if current_time - job_state["phase_start_time"] >= PRE_ANIMATION_DELAY:
+            job_state["phase"] = "display"
+            job_state["phase_start_time"] = current_time
+
     # Phase: Display Sequence
-    if job_state["phase"] == "display":
-        # Animate each item in the sequence one by one for ITEM_DISPLAY_DURATION seconds
-        if current_time - job_state["phase_start_time"] >= ITEM_DISPLAY_DURATION:
+    elif job_state["phase"] == "display":
+        if current_time - job_state["phase_start_time"] >= (PRE_ANIMATION_DELAY + ITEM_DISPLAY_DURATION):
             if job_state["current_animation_index"] < len(job_state["sequence"]) - 1:
                 job_state["current_animation_index"] += 1
                 job_state["phase_start_time"] = current_time
@@ -97,6 +109,7 @@ def update_job(job_state, controls):
     
     # Phase: Input
     elif job_state["phase"] == "input":
+        print(job_state['phase'])
         # Map controls to a number if a button is pressed
         input_value = None
         if controls.left_button:
@@ -112,7 +125,8 @@ def update_job(job_state, controls):
             job_state["phase_start_time"] = current_time
     
     elif job_state["phase"] == "input_animation":
-        if current_time - job_state["phase_start_time"] >= ITEM_DISPLAY_DURATION:
+        print(job_state['phase'])
+        if current_time - job_state["phase_start_time"] >= (PRE_ANIMATION_DELAY + ITEM_DISPLAY_DURATION - 0.5):
             # Commit the input after animation
             input_value = job_state["last_input"]
             job_state["input_sequence"].append(input_value)
@@ -131,6 +145,7 @@ def update_job(job_state, controls):
                     job_state["phase_start_time"] = current_time
     # Phase: Feedback Success (flash green)
     elif job_state["phase"] == "feedback_success":
+        print(job_state['phase'])
         # In your drawing routine, you can flash green when this phase is active.
         if current_time - job_state["phase_start_time"] >= FEEDBACK_DURATION:
             # Increase difficulty for next round
@@ -147,6 +162,7 @@ def update_job(job_state, controls):
 
     # Phase: Feedback Failure (flash red)
     elif job_state["phase"] == "feedback_failure":
+        print(job_state['phase'])
         # Flash red for FEEDBACK_DURATION seconds before resetting the sequence
         if current_time - job_state["phase_start_time"] >= FEEDBACK_DURATION:
             if job_state["mistake_count"] >= 3:

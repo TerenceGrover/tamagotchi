@@ -18,7 +18,7 @@ class Stats:
             "rest": 1,
             "social": 1,
         }
-        self.decay_interval = 5
+        self.decay_interval = 10
         self.font_path = "assets/fonts/tamzen.ttf"
         self.font_size = 11
 

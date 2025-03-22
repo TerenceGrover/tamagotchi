@@ -493,8 +493,6 @@ class Graphics:
             text_matrix = text_to_matrix(text, "assets/fonts/tamzen.ttf", 10, self.matrix_width, self.matrix_height)
             self.draw_matrix(text_matrix, self.matrix_width // 2 - len(text_matrix[0]) // 2 + 2, -2)
 
-
-
     def draw_housing_reaction_game(self, housing_state, fps):
         """
         Render the different phases of the housing reaction game with animated feedback.
@@ -610,56 +608,93 @@ class Graphics:
             game_over_matrix = text_to_matrix("Game Over", "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
             self.draw_matrix(game_over_matrix, self.matrix_width // 6 - 5, self.matrix_height // 2)
 
+    def draw_job_feedback(self, job_state):
+        """
+        Render job feedback by drawing an animated tick (if pass) or cross (if fail)
+        in the center of the screen. This replaces flashing the whole screen.
+        """
+        # Determine the animation frame based on time
+        animation_frame = int(pygame.time.get_ticks() / 200) % 5  # Loop: 0,1,2,3,4
+        if animation_frame == 4:
+            sprite_index = 2
+        else:
+            sprite_index = min(3, animation_frame + 1)
+        
+        # Choose tick or cross sprite based on reaction result
+        sprite_prefix = "tick" if job_state["phase"] == "feedback_success" else "cross"
+        sprite_path = f"assets/sprites/{sprite_prefix}{sprite_index}.png"
+        
+        # Define the sprite size (in pixels)
+        sprite_width, sprite_height = 20, 20
+        
+        # Calculate the center position in matrix coordinates.
+        # (Assuming draw_sprite_at expects matrix coordinates.)
+        center_matrix_x = (self.matrix_width - (sprite_width // self.pixel_size)) // 3
+        center_matrix_y = (self.matrix_height - (sprite_height // self.pixel_size)) // 4
+        
+        # Draw the feedback sprite at the center of the screen.
+        self.draw_sprite_at(center_matrix_x, center_matrix_y, sprite_path,
+                            sprite_width=sprite_width, sprite_height=sprite_height)
+
 
     def draw_job_screen(self, job_state):
+        PRE_ANIMATION_DELAY = 0.5
         """
         Render the job minigame screen.
-        Draw each desk item at a fixed position.
-        When in the "display" phase, animate the item corresponding to the next task in the sequence.
-        When in the "input_animation" phase, animate the desk item based on the player's input.
+        Always draw three desk items at fixed positions.
+        If in the "display" phase, animate the desk item if it is the next task in the sequence.
+        If in the "input_animation" phase, animate the desk item corresponding to the player's last input.
+        For feedback phases, fill the screen with a solid color.
         """
         self.clear_screen()
+
+        # Feedback phases: fill the entire screen with the appropriate color
+        if job_state["phase"] in ["feedback_success", "feedback_failure"]:
+            self.draw_job_feedback(job_state)
+            return
         
-        # Loop over the entire sequence (each element is an integer: 0,1,or 2)
-        for seq_index, task in enumerate(job_state["sequence"]):
-            # Determine static base position from the correct task value
+        phase_elapsed = time.time() - job_state["phase_start_time"]
+
+        # For each desk item index (0, 1, 2) always draw a sprite
+        for task in range(3):
+            # Calculate static base positions for each desk item
             base_x = (self.matrix_width // 5) + (task * 16)
             base_y = self.matrix_height // 2 - (task % 2) * 10
-            
-            # Decide whether to animate this item.
+
             animate = False
-            anim_value = None  # This will determine which sprite to use for animation
-            
-            if job_state["phase"] == "display" and seq_index == job_state.get("current_animation_index", 0):
-                animate = True
-                anim_value = task  # Show the correct task for display phase
-            elif job_state["phase"] == "input_animation" and seq_index == len(job_state["input_sequence"]):
-                animate = True
-                # In input_animation phase, use the player's last input value (which might differ from the correct task)
-                anim_value = job_state["last_input"]
-            
+            # Determine whether to animate this desk item:
+            if job_state["phase"] == "display":
+                # In display phase, animate the item if the next element in the sequence equals this desk index.
+                current_index = job_state.get("current_animation_index", 0)
+                if current_index < len(job_state["sequence"]) and job_state["sequence"][current_index] == task:
+                    if phase_elapsed >= PRE_ANIMATION_DELAY:
+                        animate = True
+            elif job_state["phase"] == "input_animation":
+                # In input_animation phase, animate if the player's last input equals this desk index.
+                if "last_input" in job_state and job_state["last_input"] == task:
+                    animate = True
+
+            # Draw either an animated version or the static version.
             if animate:
-                # Create a wiggle & scale effect over a 1-second period.
+                # Create a wiggle & scale effect (oscillates over a period of 1 second)
                 t = time.time() % 1.0
-                offset = int(math.sin(t * 2 * math.pi))  # Oscillates ±2 pixels
+                offset = int(math.sin(t * 2 * math.pi) * 2)  # Oscillates ±2 pixels
                 scale_factor = 1.0 + 0.1 * math.sin(t * 2 * math.pi)
                 animated_width = max(1, int(10 * scale_factor))
                 animated_height = max(1, int(10 * scale_factor))
-                # Recalculate base_x and base_y based on the task to keep positions consistent
-                # (Note: You might adjust the formula if you want different vertical positions in input phase.)
-                animated_x = base_x - (animated_width - 10) // 2 - offset
+                animated_x = base_x - (animated_width - 10) // 2 + offset
                 animated_y = base_y - (animated_height - 10) // 2 + offset
-                print(job_state["items"][anim_value])
-                item_path = job_state["items"][anim_value]
+                item_path = job_state["items"][task]  # Use the sprite corresponding to this desk position
                 self.draw_sprite_at(animated_x, animated_y, item_path, sprite_width=animated_width, sprite_height=animated_height)
             else:
-                # Draw the static version of the desk item.
+                # Draw the static desk item
                 item_path = job_state["items"][task]
                 self.draw_sprite_at(base_x, base_y, item_path, sprite_width=10, sprite_height=10)
-        
+
         # (Optional) Draw a progress bar at the top.
         progress = int((job_state["task_count"] / job_state["max_rounds"]) * self.matrix_width)
         pygame.draw.rect(self.screen, (0, 255, 0), (0, 0, progress, 4))
+
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""
