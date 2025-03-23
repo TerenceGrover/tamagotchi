@@ -395,8 +395,8 @@ class Graphics:
         self.clear_screen()
 
         # Tama positions
-        player_tama_x, player_tama_y = 10, self.matrix_height // 2 - 5 + social_state["tama_animation_offset"]
-        other_tama_x, other_tama_y = self.matrix_width - 15, self.matrix_height // 2 - 5 + social_state["tama_animation_offset"]
+        player_tama_x, player_tama_y = 10, self.matrix_height // 2 + 3 + social_state["tama_animation_offset"]
+        other_tama_x, other_tama_y = self.matrix_width - 18, self.matrix_height // 2 + 3 + social_state["tama_animation_offset"]
 
         # Up/down animation during feedback
         if social_state["interaction_done"]:
@@ -415,12 +415,12 @@ class Graphics:
         pygame.draw.rect(
             self.screen,
             social_state["other_bubble_color"],  # Other Tama's bubble color
-            ((other_tama_x - 7) * self.pixel_size, (other_tama_y - 2) * self.pixel_size, 7 * self.pixel_size, 4 * self.pixel_size)
+            ((other_tama_x - 7) * self.pixel_size, (other_tama_y - 4) * self.pixel_size, 9 * self.pixel_size, 6 * self.pixel_size)
         )
         pygame.draw.rect(
             self.screen,
             social_state["player_bubble_color"],  # Dynamically updated player's bubble color
-            ((player_tama_x + 7) * self.pixel_size, (player_tama_y - 2) * self.pixel_size, 7 * self.pixel_size, 4 * self.pixel_size)
+            ((player_tama_x + 7) * self.pixel_size, (player_tama_y - 4) * self.pixel_size, 9 * self.pixel_size, 6 * self.pixel_size)
         )
 
         # Draw feedback sprites
@@ -442,6 +442,34 @@ class Graphics:
                 social_state["other_feedback_sprite"][feedback_index],
                 sprite_width=6,
                 sprite_height=6
+            )
+
+        if not social_state["interaction_done"]:
+            # Use the wiggled percentage values
+            player_chance_text = f"{social_state['player_displayed_chance']}%"
+            other_chance_text = f"{social_state['other_displayed_chance']}%"
+
+            font_path = "assets/fonts/tamzen.ttf"
+            font_size = 11
+
+            # Convert to matrix form
+            player_chance_matrix = text_to_matrix(
+                player_chance_text, font_path, font_size, self.matrix_width, 10
+            )
+            other_chance_matrix = text_to_matrix(
+                other_chance_text, font_path, font_size, self.matrix_width, 10
+            )
+
+            # Draw above the Tamas
+            self.draw_matrix(
+                player_chance_matrix,
+                player_tama_x - 5,
+                player_tama_y - 16  # a bit higher above the Tama
+            )
+            self.draw_matrix(
+                other_chance_matrix,
+                other_tama_x - 8,
+                other_tama_y - 16
             )
 
         # Increment animation frames

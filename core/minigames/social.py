@@ -19,6 +19,8 @@ def initialize_socializing(graphics):
         "current_choice": 0,  # Start with the calculated color
         "animation_frames": 0,  # Tracks animation cycles
         "tama_animation_offset": 0,  # Up/down offset for Tamas
+        "player_displayed_chance": 100,
+        "other_displayed_chance": 10,
     }
 
 def handle_social_input(states, social_state, controls, stats):
@@ -28,9 +30,21 @@ def handle_social_input(states, social_state, controls, stats):
 
     if not social_state["interaction_done"]:
         # Cycle through player options
+
         if controls.right_button:
             social_state["current_choice"] = (social_state["current_choice"] + 1) % len(social_state["player_options"])
             social_state["player_bubble_color"] = social_state["player_options"][social_state["current_choice"]]
+
+            player_choice = social_state["player_options"][social_state["current_choice"]]
+            if player_choice == social_state["other_bubble_color"]:
+                base_player = 10
+                base_other = 95
+            else:
+                base_player = 95
+                base_other = 50
+
+            social_state["player_displayed_chance"] = max(0, min(100, base_player + random.randint(-5, 5)))
+            social_state["other_displayed_chance"] = max(0, min(100, base_other + random.randint(-5, 5)))
 
         # Make a choice
         if controls.center_button:
@@ -39,7 +53,7 @@ def handle_social_input(states, social_state, controls, stats):
             if player_choice == social_state["other_bubble_color"]:
                 # Player matches the other Tama's color
                 stats.stats["social"] = min(stats.stats["social"] + 10, 100)  # Social always increases
-                if random.random() < 0.9:  # 90% chance of esteem decrease
+                if random.random() < social_state["other_displayed_chance"] / 100:  # 90% chance of esteem decrease
                     stats.stats["esteem"] = max(stats.stats["esteem"] - 5, 0)
                     social_state["player_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
                 else:  # 10% chance of esteem increase
@@ -50,7 +64,7 @@ def handle_social_input(states, social_state, controls, stats):
             else:
                 # Player chooses their own basis color
                 stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 100)  # Esteem always increases
-                if random.random() < 0.5:  # 50% chance of social increase
+                if random.random() < social_state["other_displayed_chance"] / 100:  # 50% chance of social increase
                     stats.stats["social"] = min(stats.stats["social"] + 10, 100)
                     social_state["other_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
 
@@ -80,3 +94,5 @@ def handle_social_input(states, social_state, controls, stats):
 
             if social_state["current_round"] > social_state["max_rounds"]:
                 social_state["interaction_done"] = True  # End the minigame
+                return
+        

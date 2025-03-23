@@ -7,7 +7,7 @@ def initialize_platformer(money_stats):
     """
     return {
         "tama_position": [3, 10], 
-        "platforms": generate_platforms(5, 64, -10),
+        "platforms": generate_platforms(5, 64, money_stats),
         "goal_position": (60, 10),
         "goal_area": (58, 8, 3, 3),  # x, y, width, height
         "platform_speed": .5,

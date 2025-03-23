@@ -192,13 +192,12 @@ def apply_job_rewards(job_state, stats):
     # Increase safety as a benefit of having a job
     stats.modify_stat("safe", 5)
 
-    # Money reward scales from $10 (poor) to $50 (excellent)
+    # Rewards babyyyyy we ain't working that ass for free fr fr
     if performance < 25:
-        stats.modify_stat("money", -2)
+        stats.modify_stat("money", -1)
         stats.modify_stat("esteem", -3)
     elif performance < 50:
         stats.modify_stat("money", 0)
-        # No change in esteem
     elif performance < 75:
         stats.modify_stat("money", 2)
         stats.modify_stat("esteem", 2)
