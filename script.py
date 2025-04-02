@@ -10,28 +10,48 @@ from core.minigames.social import handle_social_input, initialize_socializing
 from core.minigames.housing import initialize_housing, handle_housing_input, assign_real_estate_agent
 from core.minigames.hobby import initialize_hobby, update_hobby
 from core.minigames.job import initialize_job, update_job, apply_job_rewards
+import subprocess
+import RPi.GPIO as GPIO
+
+def init_controls_safely():
+    subprocess.run(["/home/terence/tamagotchi/venv/bin/python3", "init_gpio_once.py"])
+    print("GPIO pre-initialized safely")
+
 
 # Constants
 MATRIX_WIDTH = 64
 MATRIX_HEIGHT = 32
-FPS = 30
+FPS = 25
+BRIGHTNESS = 50
 
 def main():
+    # GPIO setup before matrix is even imported
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(6, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    print("GPIO initialized early")
+
     # Set up the LED matrix options
     options = RGBMatrixOptions()
     options.rows = MATRIX_HEIGHT          # Physical rows on the LED panel
+    options.brightness = BRIGHTNESS
     options.cols = MATRIX_WIDTH           # Physical columns on the LED panel
     options.chain_length = 1              # Adjust if you have multiple panels daisy-chained
     options.parallel = 1                  # Adjust for parallel chains if needed
     # You can tweak additional options such as brightness, pwm_bits, etc., here
 
+    time.sleep(0.5)
     matrix = RGBMatrix(options=options)
 
     # Initialize game modules – note Graphics now receives the matrix instance instead of a Pygame screen.
+    print("Creating controls")
     controls = Controls()
+    print("Controls initialized fine")
+    # controls = DummyControls()
     states = States()
     stats = Stats()
-    graphics = Graphics(matrix, MATRIX_WIDTH, MATRIX_HEIGHT)  # Adjusted constructor; PIXEL_SIZE is now implicit
+    graphics = Graphics(matrix, MATRIX_WIDTH, MATRIX_HEIGHT, 1)  # Adjusted constructor; PIXEL_SIZE is now implicit
 
     graphics.set_sprites(graphics.load_sprites(states.get_sprite_folder()))
 
