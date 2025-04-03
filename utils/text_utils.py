@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-def text_to_matrix(text, font_path, font_size, width, height):
+def text_to_matrix(text, font_path, font_size, width, height, color = "white"):
     """
     Convert text into an RGB matrix.
 
@@ -25,3 +25,29 @@ def text_to_matrix(text, font_path, font_size, width, height):
         for y in range(height)
     ]
     return matrix
+
+def split_text_to_lines(text, max_chars_per_line=8):
+    """
+    Splits a string into multiple lines if it exceeds the max characters per line.
+    Adds a line break between segments closest to a space or just hard-wraps if needed.
+    """
+    if len(text) <= max_chars_per_line:
+        return [text]
+
+    words = text.split(" ")
+    lines = []
+    current_line = ""
+
+    for word in words:
+        if len(current_line) + len(word) + 1 <= max_chars_per_line:
+            if current_line:
+                current_line += " "
+            current_line += word
+        else:
+            lines.append(current_line)
+            current_line = word
+
+    if current_line:
+        lines.append(current_line)
+
+    return lines

@@ -3,7 +3,7 @@ import math
 import random
 from PIL import Image, ImageDraw
 import os
-from utils.text_utils import text_to_matrix
+from utils.text_utils import text_to_matrix, split_text_to_lines
 from core.minigames.hobby import HIT_ZONE_Y, BEAT_POSITIONS, NOTE_WIDTH
 
 class Graphics:
@@ -22,10 +22,14 @@ class Graphics:
         self.current_sprite_index = 0
         self.black = (0, 0, 0)
         self.white = (255, 255, 255)
-        self.frame_x = int(matrix_width // 10)
+        self.frame_x = int(matrix_width // 18)
         self.frame_y = int(matrix_height // 10)
-        self.frame_width = int(matrix_width // 1.2)
-        self.frame_height = int(matrix_height // 1.2)
+        self.frame_width = int(matrix_width // 1.07)
+        self.frame_height = int(matrix_height // 1.17)
+        self.end_start_time = None
+        self.death_cause = None
+        self.death_sprite_folder = None
+        self.in_death_animation = False
         # Create a canvas image for drawing (width = matrix_width * pixel_size, etc.)
         self.canvas = Image.new("RGB", (matrix_width * pixel_size, matrix_height * pixel_size))
         self.draw = ImageDraw.Draw(self.canvas)
@@ -90,24 +94,16 @@ class Graphics:
         # Draw the frame with outlined pixels.
         for x in range(self.frame_x, self.frame_x + self.frame_width):
             # Top line: black outline then white inner pixel.
-            self.draw_rect(x * self.pixel_size - 1, self.frame_y * self.pixel_size - 1,
-                           self.pixel_size + 2, self.pixel_size + 2, fill=(0, 0, 0))
             self.draw_rect(x * self.pixel_size, self.frame_y * self.pixel_size,
                            self.pixel_size - 2, self.pixel_size - 2, fill=(255, 255, 255))
             # Bottom line.
-            self.draw_rect(x * self.pixel_size - 1, (self.frame_y + self.frame_height - 1) * self.pixel_size - 1,
-                           self.pixel_size + 2, self.pixel_size + 2, fill=(0, 0, 0))
             self.draw_rect(x * self.pixel_size, (self.frame_y + self.frame_height - 1) * self.pixel_size,
                            self.pixel_size - 2, self.pixel_size - 2, fill=(255, 255, 255))
         for y in range(self.frame_y, self.frame_y + self.frame_height):
             # Left line.
-            self.draw_rect(self.frame_x * self.pixel_size - 1, y * self.pixel_size - 1,
-                           self.pixel_size + 2, self.pixel_size + 2, fill=(0, 0, 0))
             self.draw_rect(self.frame_x * self.pixel_size, y * self.pixel_size,
                            self.pixel_size - 2, self.pixel_size - 2, fill=(255, 255, 255))
             # Right line.
-            self.draw_rect((self.frame_x + self.frame_width - 1) * self.pixel_size - 1, y * self.pixel_size - 1,
-                           self.pixel_size + 2, self.pixel_size + 2, fill=(0, 0, 0))
             self.draw_rect((self.frame_x + self.frame_width - 1) * self.pixel_size, y * self.pixel_size,
                            self.pixel_size - 2, self.pixel_size - 2, fill=(255, 255, 255))
 
@@ -141,14 +137,14 @@ class Graphics:
 
         # Define the points for various screens.
         top_points = [
-            (self.frame_x + self.frame_width // 7, self.frame_y - 2),   # education
-            (self.frame_x + self.frame_width // 2, self.frame_y - 2),   # job
-            (self.frame_x + 6 * self.frame_width // 7, self.frame_y - 2)  # food
+            (self.frame_x + self.frame_width // 7, self.frame_y - 3),   # education
+            (self.frame_x + self.frame_width // 2, self.frame_y - 3),   # job
+            (self.frame_x + 6 * self.frame_width // 7, self.frame_y - 3)  # food
         ]
         bottom_points = [
-            (self.frame_x + self.frame_width // 7, self.frame_y + self.frame_height + 1),  # social
-            (self.frame_x + self.frame_width // 2, self.frame_y + self.frame_height + 1),  # hobby
-            (self.frame_x + 6 * self.frame_width // 7, self.frame_y + self.frame_height + 1)  # housing
+            (self.frame_x + self.frame_width // 7, self.frame_y + self.frame_height ),  # social
+            (self.frame_x + self.frame_width // 2, self.frame_y + self.frame_height ),  # hobby
+            (self.frame_x + 6 * self.frame_width // 7, self.frame_y + self.frame_height )  # housing
         ]
         
         all_points = top_points + bottom_points
@@ -192,6 +188,50 @@ class Graphics:
                 screen_y = (self.position[1] + y) * self.pixel_size
                 self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
 
+    def draw_text_centered(self, text, font_path="assets/fonts/tamzen.ttf", font_size=10, color="white"):
+        """
+        Draws text centered on the screen, splitting long lines automatically.
+
+        Args:
+            text (str): The text to draw.
+            font_path (str): Path to the font file.
+            font_size (int): Font size.
+            color (str or RGB tuple): Text color.
+        """
+        lines = split_text_to_lines(text, max_chars_per_line=12)
+
+        line_matrices = []
+        line_heights = []
+        for line in lines:
+            matrix = text_to_matrix(line, font_path, font_size, self.matrix_width, self.matrix_height, color)
+            # Only count rows that actually have pixels
+            non_empty_rows = [row for row in matrix if any(pixel != (0, 0, 0) for pixel in row)]
+            line_matrices.append(non_empty_rows)
+            line_heights.append(len(non_empty_rows))
+
+        # Total height with 1px spacing between lines
+        total_height = sum(line_heights) + (len(lines) - 1)
+
+        offset_y = max((self.matrix_height - total_height) // 2, 0)
+
+        for idx, matrix in enumerate(line_matrices):
+            # Determine content width for centering
+            non_empty_cols = list(zip(*matrix))
+            non_empty_cols = [col for col in non_empty_cols if any(pixel != (0, 0, 0) for pixel in col)]
+            content_width = len(non_empty_cols)
+            offset_x = max((self.matrix_width - content_width) // 4, 0)
+
+            for y, row in enumerate(matrix):
+                for x, pixel in enumerate(row):
+                    if pixel != (0, 0, 0):
+                        screen_x = (offset_x + x) * self.pixel_size
+                        screen_y = (offset_y + y) * self.pixel_size
+                        self.draw.rectangle(
+                            [screen_x, screen_y, screen_x + self.pixel_size - 1, screen_y + self.pixel_size - 1],
+                            fill=color if isinstance(color, tuple) else pixel
+                        )
+            offset_y += line_heights[idx] + 1  # Add 1 line of spacing
+
 
     def draw_home_screen(self, selected_point_index, states):
         """
@@ -209,7 +249,7 @@ class Graphics:
         Render the individual game or activity screen based on the screen name.
         """
         self.clear_screen()
-        text = f"{screen_name.replace('_', '\n').capitalize()}"
+        text = screen_name.replace('_', '\n').capitalize()
         text_matrix = text_to_matrix(
             text, "assets/fonts/tamzen.ttf", 11, self.matrix_width, self.matrix_height
         )
@@ -567,13 +607,13 @@ class Graphics:
         highscore_text = str(hobby_state['high_score'])
         score_matrix = text_to_matrix(score_text, "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
         highscore_matrix = text_to_matrix(highscore_text, "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
-        self.draw_matrix(score_matrix, 1, 1)
-        self.draw_matrix(highscore_matrix, 1, 12)
+        self.draw_matrix(score_matrix, 1, 0)
+        self.draw_matrix(highscore_matrix, 1, 9)
 
         # Draw "Game Over" if the player missed too many beats.
         if hobby_state["game_over"]:
             game_over_matrix = text_to_matrix("Game Over", "assets/fonts/tamzen.ttf", 12, self.matrix_width, self.matrix_height)
-            self.draw_matrix(game_over_matrix, self.matrix_width // 6 - 5, self.matrix_height // 2)
+            self.draw_matrix(game_over_matrix, self.matrix_width // 6 - 5, self.matrix_height // 2 + 1)
 
 
     def draw_job_feedback(self, job_state):
@@ -656,9 +696,128 @@ class Graphics:
                 item_path = job_state["items"][task]
                 self.draw_sprite_at(base_x, base_y, item_path, sprite_width=10, sprite_height=10)
 
-        # (Optional) Draw a progress bar at the top.
-        progress = int((job_state["task_count"] / job_state["max_rounds"]) * self.matrix_width)
-        self.draw_rect(0, 0, progress, 4, fill=(0, 255, 0))
+    def draw_button(self, label_matrix, x_pos, selected, button_y):
+        button_width = len(label_matrix[0])
+        button_height = len(label_matrix)
+        screen_y = button_y
+
+        # Draw background
+        bg_color = (255, 255, 255) if selected else (0, 0, 0)
+        self.draw.rectangle(
+            [x_pos, screen_y, x_pos + button_width, screen_y + button_height],
+            fill=bg_color
+        )
+
+        # Draw text
+        text_color = (0, 0, 0) if selected else (255, 255, 255)
+        for y, row in enumerate(label_matrix):
+            for x, pixel in enumerate(row):
+                if pixel != (0, 0, 0):
+                    self.draw.rectangle(
+                        [x_pos + x, screen_y + y, x_pos + x , screen_y + y],
+                        fill=text_color
+                    )
+
+    def start_end_animation(self, mode, cause=None, sprite_folder=None):
+        self.end_mode = mode
+        self.end_start_time = time.time()
+        self.death_cause = cause
+        self.death_sprite_folder = sprite_folder
+
+    def draw_end_animation(self):
+        elapsed = time.time() - self.end_start_time
+        if self.end_mode == 'win':
+            self.play_win_animation()
+        elif self.end_mode == 'lose':
+            self.play_lose_animation(self.death_cause, self.death_sprite_folder)
+
+
+    def play_win_animation(self):
+        if self.end_start_time is None:
+            self.end_start_time = time.time()
+        elapsed = time.time() - self.end_start_time
+        if int(elapsed * 5) % 2 == 0:  # Flash every ~0.2s
+            flash_color = random.choice([
+                (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
+                (255, 0, 255), (0, 255, 255)
+            ])
+            self.draw.rectangle([0, 0, self.matrix_width, self.matrix_height], fill=flash_color)
+
+        self.draw_text_centered("YOU HAVE ASCENDED")
+
+
+    def play_lose_animation(self, cause, sprite_folder):
+        if self.end_start_time is None:
+            self.end_start_time = time.time()
+            self.death_cause = cause
+            self.death_sprite_folder = sprite_folder
+
+        elapsed = time.time() - self.end_start_time
+
+        if elapsed > 6:
+            self.in_death_animation = False
+            return  # Stop drawing, exit animation
+
+        sprite_path = f"{self.death_sprite_folder}/sprite0.png"
+
+        match self.death_cause:
+            case 'food':
+                self.draw_death_hunger(elapsed, sprite_path)
+            case 'rest':
+                self.draw_death_rest(elapsed, sprite_path)
+            case 'social':
+                self.draw_death_social(elapsed, sprite_path)
+            case 'safe':
+                self.draw_death_safe(elapsed, sprite_path)
+            case 'esteem':
+                self.draw_death_esteem(elapsed, sprite_path)
+
+    def draw_death_hunger(self, elapsed, sprite_path):
+        scale = max(0.01, 1 - elapsed * 0.6)
+        self.draw_sprite_at(25, 10, sprite_path, sprite_width=max(1, int(14 * scale)), sprite_height=14)
+        if scale <= 0.02:
+            self.clear_screen()
+            self.draw_text_centered("YOU STARVED")
+
+    def draw_death_rest(self, elapsed, sprite_path):
+        scale = max(0.01, 1 - elapsed * 0.6)
+        self.draw_sprite_at(25, 10 + scale, sprite_path, sprite_width=14, sprite_height=max(1, int(14 * scale)))
+        if scale <= 0.02:
+            self.clear_screen()
+            self.draw_text_centered("YOU CAN SLEEP NOW")
+
+    def draw_death_social(self, elapsed, sprite_path):
+        for i in range(3):
+            x_offset = int(elapsed * (i + 1) * 3)
+            self.draw_sprite_at(10 + i * 15 + x_offset, 10, f"assets/sprites/otherTama/tama{i}.png")
+        if elapsed > 5:
+            self.clear_screen()
+            self.draw_text_centered("YOU DIED ALONE")
+
+    def draw_death_safe(self, elapsed, sprite_path):
+        self.draw_sprite_at(30, 10, sprite_path)
+        if elapsed > 1:
+            self.draw_sprite_at(34, 10, "assets/sprites/fx/gun.png")
+        if elapsed > 1:
+            self.draw_sprite_at(50, 10, "assets/sprites/fx/bullet_hit.png")
+        if elapsed > 3:
+            self.clear_screen()
+            self.draw_text_centered("YOU DIED")
+
+    def draw_death_esteem(self, elapsed, sprite_path):
+        self.draw_sprite_at(30, 10, sprite_path)
+        if elapsed > 1:
+            self.draw_sprite_at(39, 10, "assets/sprites/fx/gun.png")
+        if elapsed > 2:
+            self.draw_sprite_at(34, 10, "assets/sprites/fx/bullet_hit.png")
+        if elapsed > 3:
+            self.clear_screen()
+            self.draw_text_centered("YOU KILLED YOUSELF")
+
+    def end_animation_done(self):
+        return time.time() - self.end_start_time > 6
+
+
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""

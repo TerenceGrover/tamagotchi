@@ -1,4 +1,5 @@
 import time
+import random
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from core.graphics import Graphics
 from core.controls import Controls
@@ -10,6 +11,8 @@ from core.minigames.social import handle_social_input, initialize_socializing
 from core.minigames.housing import initialize_housing, handle_housing_input, assign_real_estate_agent
 from core.minigames.hobby import initialize_hobby, update_hobby
 from core.minigames.job import initialize_job, update_job, apply_job_rewards
+from core.states import RANDOM_EVENTS
+from utils.text_utils import text_to_matrix, split_text_to_lines
 import subprocess
 import RPi.GPIO as GPIO
 
@@ -22,7 +25,7 @@ def init_controls_safely():
 MATRIX_WIDTH = 64
 MATRIX_HEIGHT = 32
 FPS = 25
-BRIGHTNESS = 50
+BRIGHTNESS = 70
 
 def main():
     # GPIO setup before matrix is even imported
@@ -37,8 +40,10 @@ def main():
     options.rows = MATRIX_HEIGHT          # Physical rows on the LED panel
     options.brightness = BRIGHTNESS
     options.cols = MATRIX_WIDTH           # Physical columns on the LED panel
-    options.chain_length = 1              # Adjust if you have multiple panels daisy-chained
+    options.chain_length = 1
+    options.led_rgb_sequence = 'RBG'              # Adjust if you have multiple panels daisy-chained
     options.parallel = 1                  # Adjust for parallel chains if needed
+    options.pixel_mapper_config = "Rotate:180"
     # You can tweak additional options such as brightness, pwm_bits, etc., here
 
     time.sleep(0.5)
@@ -57,6 +62,7 @@ def main():
 
     running = True
     while running:
+
         # Handle input using your updated Controls module (likely now reading GPIO inputs)
         controls.handle_input()
 
@@ -68,19 +74,92 @@ def main():
 
         stats.decay_stats()  # Decay stats over time
 
+        if stats.check_win_condition() and states.stage_of_life != "dead":
+            states.transition_to_screen("end_screen")
+            states.transition_to_life_stage("dead")
+            graphics.start_end_animation('win', None, states.get_sprite_folder())
+            continue
+
+        death_cause = stats.check_lose_condition()
+        if death_cause and states.stage_of_life != "dead":
+            states.transition_to_screen("end_screen")
+            graphics.start_end_animation('lose', death_cause, states.get_sprite_folder())
+            states.transition_to_life_stage("dead")
+            graphics.update_sprites(states)
+            continue
+
         # Render based on the current screen/state
         if states.current_screen == "home_screen":
-            graphics.draw_home_screen(states.selected_point_index, states)
-            if controls.right_button:
-                states.cycle_point()
-            elif controls.center_button:
-                selected_screen = states.get_current_screen_from_point()
-                if states.is_screen_available(selected_screen):
-                    states.transition_to_screen(selected_screen)
-                else:
-                    print(f"Cannot access {selected_screen} at this stage!")
-            elif controls.left_button:
-                states.transition_to_screen("stats_screen")
+            if states.random_event["active"]:
+                graphics.clear_screen()
+
+                # Split the prompt
+                lines = split_text_to_lines(states.random_event["prompt"], max_chars_per_line=8)
+                total_height = len(lines) * 7
+                for i, line in enumerate(lines):
+                    line_matrix = text_to_matrix(
+                        line, "assets/fonts/tamzen.ttf", 11, MATRIX_WIDTH, MATRIX_HEIGHT
+                    )
+                    y_offset = MATRIX_HEIGHT // 12 + i * 6
+                    graphics.draw_matrix(line_matrix, MATRIX_WIDTH // 5, y_offset)
+
+                # Handle navigation
+                if controls.left_button:
+                    states.random_event["selection"] = "yes"
+                elif controls.right_button:
+                    states.random_event["selection"] = "no"
+                elif controls.center_button:
+                    # Apply the selected outcome
+                    if states.random_event["selection"] == "yes":
+                        states.random_event["outcome"]["yes"](stats)
+                    else:
+                        states.random_event["outcome"]["no"](stats)
+                    states.random_event.update({"active": False, "cooldown_timer": time.time()})
+                    states.random_event["selection"] = "yes"
+
+                # Draw Yes/No buttons
+                button_font_size = 10
+                yes_matrix = text_to_matrix("Yes", "assets/fonts/tamzen.ttf", button_font_size, 20, 10)
+                no_matrix = text_to_matrix("No", "assets/fonts/tamzen.ttf", button_font_size, 20, 10)
+
+                button_y = MATRIX_HEIGHT - 10
+
+                graphics.draw_button(yes_matrix, MATRIX_WIDTH // 4 - 8, states.random_event["selection"] == "yes", button_y)
+                graphics.draw_button(no_matrix, MATRIX_WIDTH // 2 + 8, states.random_event["selection"] == "no", button_y)
+
+            else:
+                if time.time() - states.random_event["cooldown_timer"] > random.randint(50, 100):
+                    event = random.choice(RANDOM_EVENTS)
+                    states.random_event.update({
+                        "active": True,
+                        "prompt": event["prompt"],
+                        "outcome": event,
+                        "selection": "yes"
+                    })
+
+                graphics.draw_home_screen(states.selected_point_index, states)
+                if controls.right_button:
+                    states.cycle_point()
+                elif controls.center_button:
+                    selected_screen = states.get_current_screen_from_point()
+                    if states.is_screen_available(selected_screen):
+                        states.transition_to_screen(selected_screen)
+                    else:
+                        print(f"Cannot access {selected_screen} at this stage!")
+                elif controls.left_button:
+                    states.transition_to_screen("stats_screen")
+
+        elif states.current_screen == "end_screen":
+            graphics.clear_screen()
+            graphics.draw_end_animation()
+
+            # Wait a few seconds, then return to home
+            if graphics.end_animation_done():
+                states.transition_to_screen("home_screen")
+                graphics.end_mode = None
+                graphics.end_start_time = None
+                graphics.death_cause = None
+                graphics.death_sprite_folder = None
 
         elif states.current_screen == "stats_screen":
             graphics.clear_screen()

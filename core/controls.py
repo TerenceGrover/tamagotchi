@@ -13,8 +13,7 @@ class Controls:
         self.right_pin = 6
         self.center_pin = 26
         self.last_press = time.time()
-        self.debounce_interval = 0.2
-
+        self.debounce_interval = 0.4
 
     def handle_input(self):
         current_time = time.time()
@@ -25,3 +24,10 @@ class Controls:
 
         if self.left_button or self.right_button or self.center_button:
             self.last_press = current_time
+            
+        if self.left_button:
+            print("Left button pressed")
+        if self.right_button:
+            print("Right button pressed")
+        if self.center_button:
+            print("Center button pressed")
