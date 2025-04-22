@@ -79,7 +79,7 @@ def handle_housing_input(housing_state, stats, controls, fps, states, audio):
                 housing_state["reaction_result"] = None
                 housing_state["application_result"] = "Accepted"
                 stats.modify_stat("rest", selected_house["comfort"] // 2)
-                stats.modify_stat("safe", selected_house["comfort"] // 3)
+                stats.modify_stat("safe", selected_house["comfort"] // 2)
                 stats.modify_stat("money", -selected_house["cost"])
                 audio.play_sound("success")
                 print(f"✅ Moved into {selected_house['name']}.")

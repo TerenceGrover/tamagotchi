@@ -4,17 +4,20 @@ import time
 # --- Configuration based on education level ---
 EDUCATION_CONFIG = {
     "HS": {
-        "base_length": 3,
+        "base_length": 4,
         "max_rounds": 6,
+        "reward_multiplier": 1.0,
         "items": [
             "assets/sprites/job/hs_item1.png",
             "assets/sprites/job/hs_item2.png",
             "assets/sprites/job/hs_item3.png"
         ]
+        
     },
     "BSc": {
-        "base_length": 4,
+        "base_length": 5,
         "max_rounds": 7,
+        "reward_multiplier": 1.5,
         "items": [
             "assets/sprites/job/bsc_item1.png",
             "assets/sprites/job/bsc_item2.png",
@@ -22,8 +25,9 @@ EDUCATION_CONFIG = {
         ]
     },
     "MSc": {
-        "base_length": 5,
+        "base_length": 6,
         "max_rounds": 8,
+        "reward_multiplier": 2.0,
         "items": [
             "assets/sprites/job/msc_item1.png",
             "assets/sprites/job/msc_item2.png",
@@ -31,8 +35,9 @@ EDUCATION_CONFIG = {
         ]
     },
     "PhD": {
-        "base_length": 6,
+        "base_length": 7,
         "max_rounds": 9,
+        "reward_multiplier": 2.5,
         "items": [
             "assets/sprites/job/phd_item1.png",
             "assets/sprites/job/phd_item2.png",
@@ -76,6 +81,7 @@ def initialize_job(education_level):
         "max_rounds": max_rounds,
         "completed": False,
         "high_score": 0,
+        "reward_multiplier": config.get("reward_multiplier", 1.0),
     }
 
 
@@ -196,21 +202,24 @@ def apply_job_rewards(job_state, stats):
     # Increase safety as a benefit of having a job
     stats.modify_stat("safe", 5)
 
+    multiplier = job_state.get("reward_multiplier", 1.0)
+
     # Rewards babyyyyy we ain't working that ass for free fr fr
+    # proportional to education level obviouslyyyyyy
     if performance < 25:
-        stats.modify_stat("money", -1)
-        stats.modify_stat("esteem", -3)
-    elif performance < 50:
         stats.modify_stat("money", 0)
+        stats.modify_stat("esteem", -int(3 * multiplier))
+    elif performance < 50:
+        stats.modify_stat("money", int(2 * multiplier))
     elif performance < 75:
-        stats.modify_stat("money", 2)
-        stats.modify_stat("esteem", 2)
+        stats.modify_stat("money", int(5 * multiplier))
+        stats.modify_stat("esteem", int(2 * multiplier))
     elif performance < 100:
-        stats.modify_stat("money", 4)
-        stats.modify_stat("esteem", 3)
+        stats.modify_stat("money", int(6 * multiplier))
+        stats.modify_stat("esteem", int(3 * multiplier))
     else:
-        stats.modify_stat("money", 6)
-        stats.modify_stat("esteem", 5)
+        stats.modify_stat("money", int(7 * multiplier))
+        stats.modify_stat("esteem", int(5 * multiplier))
 
     print(f"Job Complete! Score: {current_score}, High Score: {high_score}, Performance: {performance:.1f}%")
 

@@ -141,7 +141,7 @@ def check_goal_reached(game_state, stats, audio):
     if goal_x - goal_width <= tama_x <= goal_x + goal_width and goal_y - goal_height <= tama_y <= goal_y + goal_height:
         game_state["minigame_ended"] = True
         audio.play_sound("success")  # Play success sound
-        stats.stats["food"] = min(stats.stats["food"] + 20, 100)  # Cap food at 100
+        stats.modify_stat("food", 20)  # Increase money stat
 
 
 def draw_platformer(self, game_state, sprite_folder):

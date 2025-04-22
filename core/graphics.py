@@ -675,7 +675,6 @@ class Graphics:
             base_y = self.matrix_height // 2 - (task % 2) * 10
 
             animate = False
-            # Determine whether to animate this desk item:
             if job_state["phase"] == "display":
                 current_index = job_state.get("current_animation_index", 0)
                 if current_index < len(job_state["sequence"]) and job_state["sequence"][current_index] == task:
@@ -687,8 +686,8 @@ class Graphics:
 
             # Draw either an animated version or the static version.
             if animate:
-                # Create a wiggle & scale effect (oscillates over a period of 1 second)
-                t = time.time() % 1.0
+                # Create a wiggle & scale effect (oscillates over a period of .5 seconds)
+                t = time.time() % 0.5
                 offset = int(math.sin(t * 2 * math.pi) * 2)  # Oscillates ±2 pixels
                 scale_factor = 1.0 + 0.1 * math.sin(t * 2 * math.pi)
                 animated_width = max(1, int(10 * scale_factor))

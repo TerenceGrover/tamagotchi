@@ -90,23 +90,23 @@ def apply_hobby_rewards(hobby_state, stats, audio):
 
     # Apply stat changes based on performance
     if performance < 25:  # Bad performance
-        stats.modify_stat("rest", 2)
+        stats.modify_stat("rest", 5)
         stats.modify_stat("esteem", -2)
         audio.play_sound("failure")
     elif 25 <= performance < 50:  # Neutral
-        pass  # No change
+        stats.modify_stat("rest", 10)
         audio.play_sound("failure")
     elif 50 <= performance < 75:  # Good
-        stats.modify_stat("rest", 2)
-        stats.modify_stat("esteem", 2)
-        audio.play_sound("success")
-    elif 75 <= performance < 100:  # Great
-        stats.modify_stat("rest", 2)
+        stats.modify_stat("rest", 15)
         stats.modify_stat("esteem", 5)
         audio.play_sound("success")
+    elif 75 <= performance < 100:  # Great
+        stats.modify_stat("rest", 20)
+        stats.modify_stat("esteem", 10)
+        audio.play_sound("success")
     else:  # New high score!
-        stats.modify_stat("rest", 3)
-        stats.modify_stat("esteem", 8)
+        stats.modify_stat("rest", 40)
+        stats.modify_stat("esteem", 20)
         audio.play_sound("success")
 
     print(f"🎵 Hobby Complete! Score: {current_score}, High Score: {high_score}")
