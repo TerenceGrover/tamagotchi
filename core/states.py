@@ -3,6 +3,85 @@ from core.minigames.platformer import initialize_platformer
 from core.minigames.hobby import initialize_hobby  # Import Hobby Minigame
 from core.minigames.job import initialize_job  # Placeholder for Job Minigame
 
+RANDOM_EVENTS = [
+    {
+        "prompt": "try crack?",
+        "yes": lambda stats: (
+            stats.modify_stat("esteem", 999),
+            stats.modify_stat("safe", -stats.stats["safe"] // 2)
+        ),
+        "no": lambda stats: None
+    },
+    {
+        "prompt": "invest in crypto?",
+        "yes": lambda stats: (
+            stats.modify_stat("money", -30),
+            stats.modify_stat("safe", -30),
+            setattr(stats, "crypto_investment_time", time.time())
+        ),
+        "no": lambda stats: stats.modify_stat("safe", 5)
+    },
+    {
+        "prompt": "date a teen?",
+        "yes": lambda stats: (
+            stats.modify_stat("esteem", 20),
+            stats.modify_stat("safe", -stats.stats["safe"])
+        ),
+        "no": lambda stats: None
+    },
+    {
+        "prompt": "become religious?",
+        "yes": lambda stats: (
+            stats.modify_stat("safe", 10),
+            stats.modify_stat("social", -10)
+        ),
+        "no": lambda stats: stats.modify_stat("esteem", 10)
+    },
+    {
+    "prompt": "join a cult?",
+    "yes": lambda stats: (
+        stats.modify_stat("social", 20),
+        stats.modify_stat("esteem", -10),
+        stats.modify_stat("safe", -stats.stats["safe"] // 2)
+    ),
+    "no": lambda stats: stats.modify_stat("esteem", 5)
+    },
+    {
+        "prompt": "sell a kidney?",
+        "yes": lambda stats: (
+            stats.modify_stat("money", 50),
+            stats.modify_stat("safe", -20)
+        ),
+        "no": lambda stats: stats.modify_stat("esteem", -5)
+    },
+    {
+        "prompt": "buy gun?",
+        "yes": lambda stats: (
+            stats.modify_stat("safe", 30),
+            stats.modify_stat("social", -15)
+        ),
+        "no": lambda stats: stats.modify_stat("safe", -5)
+    },
+    {
+        "prompt": "incite a riot?",
+        "yes": lambda stats: (
+            stats.modify_stat("esteem", 20),
+            stats.modify_stat("social", 20),
+            stats.modify_stat("safe", -10)
+        ),
+        "no": lambda stats: stats.modify_stat("social", -10)
+    },
+    {
+        "prompt": "drink bleach?",
+        "yes": lambda stats: (
+            stats.modify_stat("safe", -100),
+            stats.modify_stat("esteem", 999)  # go out proud
+        ),
+        "no": lambda stats: stats.modify_stat("safe", 5)
+    }
+]
+
+
 class States:
     def __init__(self):
         self.stage_of_life = "egg"  # Default stage
@@ -12,11 +91,25 @@ class States:
         self.selected_point_index = 0  # Default point selection
         self.animation_frame = None
         self.selected_level = None
+        self.animation_start_time = None
         self.student_loan = 0
         self.housing_state = None
+        self.education_options = [
+            {"level": "HS", "loan": 5000},
+            {"level": "BSc", "loan": 20000},
+            {"level": "MSc", "loan": 50000},
+            {"level": "PhD", "loan": 100000}
+        ]
         self.platformer_state = None  # Holds platformer game state
         self.hobby_state = None  # Holds hobby game state
         self.job_state = None  # Holds job game state (to be implemented)
+        self.random_event = {
+            "active": False,
+            "prompt": "",
+            "outcome": None,
+            "cooldown_timer": time.time(),
+            "selection": "yes"  # or "no"
+        }
 
         self.point_screens = [
             "education_screen", "hobby_screen", "food_screen",  
@@ -25,15 +118,15 @@ class States:
 
         self.all_screens = {
             "egg": ["stats_screen"],
-            "small": ["stats_screen", "education_screen", "food_screen", "socialize_screen", "hobby_screen"],
-            "adult": ["stats_screen", "education_screen", "food_screen", "socialize_screen", "hobby_screen", "job_screen", "housing_screen"],
-            "dead": []  # No screens accessible
+            "small": ["stats_screen", "education_screen" if self.selected_level is None else None, "food_screen", "socialize_screen", "hobby_screen"],
+            "adult": ["stats_screen", "education_screen" if self.selected_level is None else None, "food_screen", "socialize_screen", "hobby_screen", "job_screen" if self.selected_level else "", "housing_screen"],
+            "dead": ["end_screen"]
         }
 
         # Age-related properties
         self.age = 0
         self.start_time = time.time()
-        self.life_stages = {"egg": 0, "small": 0, "adult": 90}  # Age thresholds
+        self.life_stages = {"egg": 0, "small":0 , "adult": 150, "dead" : 100000000}  # Age thresholds
 
     def update_life_stage(self):
         """

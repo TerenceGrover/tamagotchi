@@ -7,8 +7,9 @@ def calculate_housing_acceptance(housing_state, stats):
     selected_house = housing_state["housing_options"][housing_state["current_choice"]]
     base_probability = {
         "Crack House": 0.95,
-        "Apartment": 0.65, 
-        "House": 0.30,
+        "Apartment": 0.7, 
+        "House": 0.5,
+        "Sex Dungeon": 0.35
     }[selected_house["name"]]
 
     probability = base_probability

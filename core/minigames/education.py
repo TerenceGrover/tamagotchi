@@ -1,7 +1,7 @@
 import random
 import pygame
 
-def handle_education_input(stats, states, controls):
+def handle_education_input(stats, states, controls, audio):
     """
     Handle input and navigation logic for the education mini-game.
     """
@@ -9,25 +9,24 @@ def handle_education_input(stats, states, controls):
     if controls.left_button:
         stats.update_education_stats(states.selected_level, states.student_loan)
         states.transition_to_screen("home_screen")
+        audio.play_sound("click")
         return
 
     if states.animation_frame is None:
         # Navigate between suitcases
         if controls.right_button:
             states.selected_point_index = (states.selected_point_index + 1) % 2
+            audio.play_sound("click")
 
         # Select a suitcase to start the animation
         if controls.center_button:
+            audio.play_sound("suitcaseOpen")
             states.animation_frame = 0
-            education_options = {
-                0: {"level": "HS", "loan": 5000},    # Suitcase 0
-                1: {"level": "BSc", "loan": 20000}, # Suitcase 1
-                2: {"level": "MSc", "loan": 50000}, # Suitcase 2
-                3: {"level": "PhD", "loan": 100000} # Suitcase 3
-            }
-            selected = education_options.get(states.selected_point_index, {})
-            states.selected_level = selected.get("level", "DropOut")
-            states.student_loan = selected.get("loan", random.choice([0, 1000, 2000]))
+            selected = states.education_options[states.selected_point_index]
+            states.selected_level = selected["level"]
+            states.student_loan = selected["loan"]
+
+
 
     elif states.animation_frame <= 2:
         # Advance animation frames
@@ -39,6 +38,7 @@ def handle_education_input(stats, states, controls):
         if controls.left_button:
             stats.update_education_stats(states.selected_level, states.student_loan)
             states.animation_frame = None
+            states.education_done = True
             states.transition_to_screen("home_screen")
 
 

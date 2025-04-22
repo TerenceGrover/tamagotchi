@@ -2,12 +2,16 @@ import time
 import random
 from utils.housing_utlis import calculate_housing_acceptance
 
+# Define thresholds for each house option (by index)
+HOUSE_MONEY_THRESHOLDS = [10, 25, 50, 75]
+
 def initialize_housing():
     return {
         "housing_options": [
-            {"name": "Crack House", "sprite": "assets/sprites/housing/crack_house.png", "comfort": 10, "cost": 100},
-            {"name": "Apartment", "sprite": "assets/sprites/housing/apartment.png", "comfort": 30, "cost": 500},
-            {"name": "House", "sprite": "assets/sprites/housing/house.png", "comfort": 80, "cost": 2000},
+            {"name": "Crack House", "sprite": "assets/sprites/housing/crack_house.png", "comfort": 20, "cost": 5},
+            {"name": "Apartment", "sprite": "assets/sprites/housing/apartment.png", "comfort": 50, "cost": 10},
+            {"name": "House", "sprite": "assets/sprites/housing/house.png", "comfort": 100, "cost": 15},
+            {"name": "Sex Dungeon", "sprite": "assets/sprites/housing/castle.png", "comfort": 200, "cost": 20},
         ],
         "current_choice": 0,
         "house_selected": False,
@@ -29,9 +33,6 @@ def initialize_housing():
     }
 
 def reset_housing_state(housing_state):
-    """
-    Reset all the dynamic states in the housing_state to their initial values.
-    """
     keys_to_reset = [
         "house_selected",
         "countdown_active",
@@ -46,163 +47,121 @@ def reset_housing_state(housing_state):
     ]
     for key in keys_to_reset:
         housing_state[key] = None if (key.endswith("_start") or key.endswith('_result')) else False
-
-    # Reset countdown and timer-specific values explicitly
-    housing_state["countdown_timer"] = 3  # Reset countdown to initial value
+    housing_state["countdown_timer"] = 3
 
 def assign_real_estate_agent(housing_state):
-    """
-    Assigns a random real estate agent to the transaction.
-    """
     agent_skins = ["yellow", "orange", "green"]
-    agent_table = {
-        "green": 1,
-        "orange": 2,
-        "yellow": 3
-    }
-
-    # Pick a random skin first
+    agent_table = {"green": 1, "orange": 2, "yellow": 3}
     chosen_skin = random.choice(agent_skins)
-    
     housing_state["real_estate_agent"] = {
         "skin_color": chosen_skin,
         "sprite": f"assets/sprites/otherTama/tama{agent_table[chosen_skin]}.png",
     }
 
-
-def handle_housing_input(housing_state, stats, controls, fps, states):
+def handle_housing_input(housing_state, stats, controls, fps, states, audio):
     """
-    Handle the housing state input and update game logic.
+    Update housing state.
+    Only allow selecting a house if stats.money meets the threshold for that option.
     """
+    current_threshold = HOUSE_MONEY_THRESHOLDS[housing_state["current_choice"]]
     
     if housing_state["pending"]:
-        # If in a pending state, pressing the left button resets the state
         if controls.left_button or controls.center_button or controls.right_button:
             states.transition_to_screen("home_screen")
             return
-        
-        elif time.time() - housing_state["pending_start_time"] > housing_state["pending_wait_time"] and housing_state["current_home"] is None:
-    # Calculate housing acceptance based on probability
+        elif (time.time() - housing_state["pending_start_time"] > housing_state["pending_wait_time"] 
+              and housing_state["current_home"] is None):
             probability = calculate_housing_acceptance(housing_state, stats)
             if random.random() < probability:
-                # ✅ Application Accepted
                 selected_house = housing_state["housing_options"][housing_state["current_choice"]]
-                housing_state["current_home"] = selected_house  # Save the new home
+                housing_state["current_home"] = selected_house
                 housing_state["pending"] = False
                 housing_state["reaction_result"] = None
                 housing_state["application_result"] = "Accepted"
-
-                # 🏠 Apply housing effects
-                stats.modify_stat("rest", selected_house["comfort"] // 2)  # Better house → better rest
-                stats.modify_stat("safe", selected_house["comfort"] // 3)  # Better house → better safety
-                stats.modify_stat("money", -selected_house["cost"])  # Deduct money
-
-                print(f"✅ Moved into {selected_house['name']}. Rest +{selected_house['comfort'] // 2}, Safe +{selected_house['comfort'] // 3}, Money -${selected_house['cost']}")
+                stats.modify_stat("rest", selected_house["comfort"] // 2)
+                stats.modify_stat("safe", selected_house["comfort"] // 3)
+                stats.modify_stat("money", -selected_house["cost"])
+                audio.play_sound("success")
+                print(f"✅ Moved into {selected_house['name']}.")
             else:
-                # ❌ Application Denied
                 housing_state["pending"] = False
                 housing_state["reaction_result"] = None
                 housing_state["application_result"] = "Denied"
-
-        
-    else: 
+                audio.play_sound("failure")
+                
         if controls.left_button:
             states.transition_to_screen("home_screen")
-            reset_housing_state(housing_state)  # Use the helper function to reset the state
+            reset_housing_state(housing_state)
+            audio.play_sound("click")
             return
 
-    # Handle reaction result display duration
-    # Handle reaction result display duration
+    # Prevent further interactions if we are showing feedback
     if housing_state["reaction_result"] is not None:
-        print(f"Reaction result: {housing_state['reaction_result']}")  # Debug print
-
-        # Ensure reaction_result_display_time is set before using it
         if housing_state["reaction_result_display_time"] is None:
             housing_state["reaction_result_display_time"] = time.time()
-
-        # Wait before clearing the result
         if time.time() - housing_state["reaction_result_display_time"] > 2:
             if housing_state["reaction_result"] == "pass":
-                # ✅ Success → Move to pending state
                 housing_state["pending"] = True
                 housing_state["pending_start_time"] = time.time()
-                
-                # Clear result after animation
-                housing_state["reaction_result"] = None
-                housing_state["reaction_result_display_time"] = None  
-
             elif housing_state["reaction_result"] == "fail":
-                # ❌ Failure → **Wait for player to press a button before resetting**
                 if controls.left_button or controls.center_button or controls.right_button:
                     reset_housing_state(housing_state)
-                    housing_state["reaction_result"] = None  # Ensure it's cleared after reset
-                    housing_state["reaction_result_display_time"] = None   
-            
-        return  # Prevent further interactions while animation is playing
+            housing_state["reaction_result"] = None
+            housing_state["reaction_result_display_time"] = None
+        return
 
-
-
-    if not housing_state["house_selected"] and not housing_state["current_home"]:
-        # Cycle through housing options
+    if not housing_state["house_selected"]:
+        # Cycle through options
         if controls.right_button:
             housing_state["current_choice"] = (housing_state["current_choice"] + 1) % len(housing_state["housing_options"])
-
-        # Select the current house
+            audio.play_sound("click")
+        # When selecting a house, only allow it if money is high enough.
         if controls.center_button:
-            housing_state["house_selected"] = True
-            housing_state["countdown_active"] = True
-            housing_state["countdown_timer"] = 3  # Reset countdown timer
-            print(f"Selected house: {housing_state['housing_options'][housing_state['current_choice']]['name']}")
-
+            if stats.stats["money"] >= current_threshold:
+                audio.play_sound("suitcaseOpen")
+                housing_state["house_selected"] = True
+                housing_state["countdown_active"] = True
+                housing_state["countdown_timer"] = 3
+                print(f"Selected house: {housing_state['housing_options'][housing_state['current_choice']]['name']}")
+            else:
+                print("Not enough money for this house!")
+                # Optionally, you can add a visual lock/flash here.
     elif housing_state["countdown_active"]:
-        # Handle countdown logic
         if housing_state["countdown_timer"] > 0:
-            housing_state["countdown_timer"] -= 1 / fps  # Decrement countdown timer
+            housing_state["countdown_timer"] -= 1 / fps
         else:
             housing_state["countdown_active"] = False
             housing_state["random_timeout_active"] = True
-            housing_state["random_timeout_duration"] = random.uniform(0.1, 6.0)  # Random timeout duration
+            housing_state["random_timeout_duration"] = random.uniform(0.1, 6.0)
             housing_state["random_timeout_start"] = time.time()
-
     elif housing_state["random_timeout_active"]:
-    # Handle random timeout logic
         elapsed_time = time.time() - housing_state["random_timeout_start"]
         if elapsed_time >= housing_state["random_timeout_duration"]:
+            audio.play_sound("jump")
             housing_state["random_timeout_active"] = False
             housing_state["reaction_active"] = True
             housing_state["reaction_start_time"] = time.time()
-
-            # Set reaction threshold based on house comfort
             selected_house = housing_state["housing_options"][housing_state["current_choice"]]
             comfort = selected_house["comfort"]
-            housing_state["reaction_threshold"] = max(1.0, 3.0 - (comfort / 20))  # Example formula
-
-            # 🏠 **Assign real estate agent at the start of reaction game**
+            housing_state["reaction_threshold"] = max(1.0, 3.0 - (comfort / 20))
             if housing_state["real_estate_agent"] is None:
                 assign_real_estate_agent(housing_state)
-
-
     elif housing_state["reaction_active"]:
-        # Handle reaction timing
-        print('reaction_active')
         reaction_time = time.time() - housing_state["reaction_start_time"]
-
-        if controls.center_button:  # Player reacts
+        if controls.center_button:
             if reaction_time <= housing_state["reaction_threshold"]:
                 housing_state["reaction_result"] = "pass"
+                audio.play_sound("success")
                 print("Reaction success!")
             else:
                 housing_state["reaction_result"] = "fail"
+                audio.play_sound("failure")
                 print("Reaction too slow!")
-
             housing_state["reaction_active"] = False
-            housing_state["reaction_result_display_time"] = time.time()  # Set time to delay clearing the result
-
+            housing_state["reaction_result_display_time"] = time.time()
         elif reaction_time > housing_state["reaction_threshold"] + 0.5:
-            if housing_state["reaction_result"] is None:  # Ensure fail state is not overridden
+            if housing_state["reaction_result"] is None:
                 housing_state["reaction_result"] = "fail"
                 print("Reaction failed (timeout)!")
                 housing_state["reaction_active"] = False
-                housing_state["reaction_result_display_time"] = time.time()  # Set time to delay clearing the result
-
-
+                housing_state["reaction_result_display_time"] = time.time()

@@ -33,7 +33,7 @@ def generate_platforms(num_platforms, screen_width, money_stat):
     """
     # Cap the number of platforms to fit within the screen
     max_platforms = screen_width // 10
-    num_platforms = min(num_platforms + money_stat // 20, max_platforms)
+    num_platforms = min(round(num_platforms + money_stat // 20), max_platforms)
 
     platforms = []
     for i in range(num_platforms):
@@ -108,7 +108,7 @@ def update_platforms(game_state, jump_curve):
         game_state["minigame_ended"] = True
 
 
-def handle_input(game_state, controls, states, jump_curve):
+def handle_input(game_state, controls, states, jump_curve, audio):
     """
     Handle Tamagotchi movement based on user input.
     """
@@ -127,9 +127,10 @@ def handle_input(game_state, controls, states, jump_curve):
         game_state["jumping"] = True
         game_state["jump_counter"] = 0
         game_state["on_platform"] = False
+        audio.play_sound("jump")  # Play jump sound
 
 
-def check_goal_reached(game_state, stats):
+def check_goal_reached(game_state, stats, audio):
     """
     Check if the Tamagotchi has reached the goal.
     """
@@ -139,51 +140,43 @@ def check_goal_reached(game_state, stats):
 
     if goal_x - goal_width <= tama_x <= goal_x + goal_width and goal_y - goal_height <= tama_y <= goal_y + goal_height:
         game_state["minigame_ended"] = True
+        audio.play_sound("success")  # Play success sound
         stats.stats["food"] = min(stats.stats["food"] + 20, 100)  # Cap food at 100
 
 
-def draw_platformer(graphics, game_state, sprite_folder):
+def draw_platformer(self, game_state, sprite_folder):
     """
-    Render the platformer mini-game screen.
+    Render the platformer mini-game screen onto the LED matrix.
+    This version uses the canvas (self.canvas) and then calls render_to_matrix()
+    to push the image to the LED matrix.
     """
-    tama_position = game_state["tama_position"]
-    platforms = game_state["platforms"]
-    goal_position = game_state["goal_position"]
+    # Clear the canvas by filling it with black
+    self.draw.rectangle([0, 0, self.canvas.width, self.canvas.height], fill=self.black)
 
-    graphics.clear_screen()
+    # Draw platforms as white rectangles
+    for platform in game_state["platforms"]:
+        platform_x, platform_y, platform_width = platform
+        # Calculate pixel coordinates on the canvas
+        x1 = platform_x * self.pixel_size
+        y1 = platform_y * self.pixel_size
+        x2 = (platform_x + platform_width) * self.pixel_size
+        y2 = (platform_y + 1) * self.pixel_size  # 1 pixel tall
+        self.draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 255))
 
-    # Draw platforms
-    for platform_x, platform_y, platform_width in platforms:
-        pygame.draw.rect(
-            graphics.screen,
-            (255, 255, 255),  # White platform
-            (
-                platform_x * graphics.pixel_size,
-                platform_y * graphics.pixel_size,
-                platform_width * graphics.pixel_size,
-                graphics.pixel_size,
-            ),
-        )
+    # Draw the goal as a green square
+    goal_x, goal_y = game_state["goal_position"]
+    x1 = goal_x * self.pixel_size
+    y1 = goal_y * self.pixel_size
+    x2 = (goal_x + 1) * self.pixel_size
+    y2 = (goal_y + 1) * self.pixel_size
+    self.draw.rectangle([x1, y1, x2, y2], fill=(0, 255, 0))
 
-    # Draw the goal
-    goal_x, goal_y = goal_position
-    pygame.draw.rect(
-        graphics.screen,
-        (0, 255, 0),  # Green goal
-        (
-            goal_x * graphics.pixel_size,
-            goal_y * graphics.pixel_size,
-            graphics.pixel_size,
-            graphics.pixel_size,
-        ),
-    )
+    # Draw the Tamagotchi sprite using the provided sprite image
+    tama_x, tama_y = game_state["tama_position"]
+    sprite_path = f"{sprite_folder}/sprite0.png"
+    self.draw_sprite_at(tama_x, tama_y, sprite_path, sprite_width=7, sprite_height=7)
 
-    # Draw Tamagotchi sprite
-    tama_x, tama_y = tama_position
-    graphics.draw_sprite_at(
-        tama_x,
-        tama_y,
-        f"{sprite_folder}/sprite0.png",
-        sprite_width=7,  # Scaled-down sprite
-        sprite_height=7,
-    )
+    # (Optional) You can add other UI elements here if needed.
+
+    # Finally, push the canvas to the LED matrix
+    self.render_to_matrix()

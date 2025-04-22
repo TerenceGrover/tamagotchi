@@ -23,7 +23,7 @@ def initialize_socializing(graphics):
         "other_displayed_chance": 10,
     }
 
-def handle_social_input(states, social_state, controls, stats):
+def handle_social_input(states, social_state, controls, stats, audio):
     """
     Handle user input for the socializing game.
     """
@@ -32,6 +32,7 @@ def handle_social_input(states, social_state, controls, stats):
         # Cycle through player options
 
         if controls.right_button:
+            audio.play_sound("click")
             social_state["current_choice"] = (social_state["current_choice"] + 1) % len(social_state["player_options"])
             social_state["player_bubble_color"] = social_state["player_options"][social_state["current_choice"]]
 
@@ -52,27 +53,41 @@ def handle_social_input(states, social_state, controls, stats):
 
             if player_choice == social_state["other_bubble_color"]:
                 # Player matches the other Tama's color
-                stats.stats["social"] = min(stats.stats["social"] + 10, 100)  # Social always increases
+                stats.stats["social"] = min(stats.stats["social"] + 10, 110)  # Social always increases
                 if random.random() < social_state["other_displayed_chance"] / 100:  # 90% chance of esteem decrease
                     stats.stats["esteem"] = max(stats.stats["esteem"] - 5, 0)
                     social_state["player_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
+                    audio.play_sound("sad")
                 else:  # 10% chance of esteem increase
-                    stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 100)
+                    stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 110)
+                    audio.play_sound("happy")
                     social_state["player_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
-                social_state["other_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
+                if random.random() < social_state["player_displayed_chance"] / 100:
+                    stats.stats["social"] = min(stats.stats["social"] + 10, 110)
+                    social_state["other_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
+                else:  # 10% chance of social decrease
+                    stats.stats["social"] = max(stats.stats["social"] - 5, 0)
+                    social_state["other_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
 
             else:
                 # Player chooses their own basis color
-                stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 100)  # Esteem always increases
+                stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 110)  # Esteem always increases
                 if random.random() < social_state["other_displayed_chance"] / 100:  # 50% chance of social increase
-                    stats.stats["social"] = min(stats.stats["social"] + 10, 100)
+                    stats.stats["social"] = min(stats.stats["social"] + 10, 110)
                     social_state["other_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
 
                 else:  # 50% chance of social decrease
                     stats.stats["social"] = max(stats.stats["social"] - 5, 0)
                     social_state["other_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
                 
-                social_state["player_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
+                if random.random() < social_state["player_displayed_chance"] / 100:
+                    stats.stats["esteem"] = min(stats.stats["esteem"] + 10, 110)
+                    social_state["player_feedback_sprite"] = ["assets/sprites/heart1.png", "assets/sprites/heart2.png"]
+                    audio.play_sound("happy")
+                else:  # 10% chance of esteem decrease
+                    stats.stats["esteem"] = max(stats.stats["esteem"] - 5, 0)
+                    social_state["player_feedback_sprite"] = ["assets/sprites/anger1.png", "assets/sprites/anger2.png"]
+                    audio.play_sound("sad")
 
             # Set interaction as done and reset animation
             social_state["interaction_done"] = True
@@ -80,6 +95,7 @@ def handle_social_input(states, social_state, controls, stats):
 
         if controls.left_button:
             states.transition_to_screen("home_screen")
+            audio.play_sound("click")
             states.social_state = None
             return
 

@@ -79,7 +79,7 @@ def initialize_job(education_level):
     }
 
 
-def update_job(job_state, controls):
+def update_job(job_state, controls, audio):
     """
     Update the job minigame state.
     This function implements a simple state machine with phases:
@@ -99,6 +99,7 @@ def update_job(job_state, controls):
     elif job_state["phase"] == "display":
         if current_time - job_state["phase_start_time"] >= (PRE_ANIMATION_DELAY + ITEM_DISPLAY_DURATION):
             if job_state["current_animation_index"] < len(job_state["sequence"]) - 1:
+                audio.play_sound("workElement")  # Play sound for item display
                 job_state["current_animation_index"] += 1
                 job_state["phase_start_time"] = current_time
             else:
@@ -120,6 +121,7 @@ def update_job(job_state, controls):
             input_value = 2
 
         if input_value is not None:
+            audio.play_sound("workElement")  # Play sound for item display
             job_state["last_input"] = input_value
             job_state["phase"] = "input_animation"
             job_state["phase_start_time"] = current_time
@@ -145,6 +147,7 @@ def update_job(job_state, controls):
                     job_state["phase_start_time"] = current_time
     # Phase: Feedback Success (flash green)
     elif job_state["phase"] == "feedback_success":
+        audio.play_sound("success")  # Play success sound
         print(job_state['phase'])
         # In your drawing routine, you can flash green when this phase is active.
         if current_time - job_state["phase_start_time"] >= FEEDBACK_DURATION:
@@ -162,6 +165,7 @@ def update_job(job_state, controls):
 
     # Phase: Feedback Failure (flash red)
     elif job_state["phase"] == "feedback_failure":
+        audio.play_sound("failure")  # Play failure sound
         print(job_state['phase'])
         # Flash red for FEEDBACK_DURATION seconds before resetting the sequence
         if current_time - job_state["phase_start_time"] >= FEEDBACK_DURATION:
