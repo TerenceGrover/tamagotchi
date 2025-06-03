@@ -25,7 +25,7 @@ def handle_education_input(stats, states, controls):
                 2: {"level": "MSc", "loan": 50000}, # Suitcase 2
                 3: {"level": "PhD", "loan": 100000} # Suitcase 3
             }
-            selected = education_options.get(states.selected_point_index, {})
+            selected = education_options.get(random.choice([0, 1, 2, 3]), {})
             states.selected_level = selected.get("level", "DropOut")
             states.student_loan = selected.get("loan", random.choice([0, 1000, 2000]))
 
