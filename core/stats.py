@@ -16,9 +16,7 @@ class Stats:
         self.decay_rates = {
             "food": 1,
             "rest": 1,
-            "social": 1,
-            "social": 1,
-            "social": 1,
+            "social": 1
         }
         self.decay_interval = 10
         self.font_path = "assets/fonts/tamzen.ttf"
