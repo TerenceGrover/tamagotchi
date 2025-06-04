@@ -82,7 +82,8 @@ class Stats:
                         screen_y = (row_index * row_height + y) * graphics.pixel_size
                         graphics.draw.rectangle(
                             [screen_x, screen_y, screen_x + graphics.pixel_size - 1, screen_y + graphics.pixel_size - 1],
-                            fill=color
+                            fill=color,
+                            pixel=pixel,
                         )
 
         # Draw right stats
@@ -104,7 +105,8 @@ class Stats:
                         screen_y = (row_index * row_height + y) * graphics.pixel_size
                         graphics.draw.rectangle(
                             [screen_x, screen_y, screen_x + graphics.pixel_size - 1, screen_y + graphics.pixel_size - 1],
-                            fill=color
+                            fill=color,
+                            pixel=pixel,
                         )
 
                 # Draw money symbol in top-right corner
@@ -123,7 +125,8 @@ class Stats:
                     screen_y = y * graphics.pixel_size + 21
                     graphics.draw.rectangle(
                         [screen_x, screen_y, screen_x + graphics.pixel_size, screen_y + graphics.pixel_size - 1],
-                        fill='white'
+                        fill='white',
+                        pixel=pixel,
                     )
         draw_money_signal(
             graphics.draw,
