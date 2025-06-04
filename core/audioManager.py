@@ -3,7 +3,7 @@ import threading
 import time
 
 class AudioManager:
-    def __init__(self, buzzer_pin=19):
+    def __init__(self, buzzer_pin=2):
         self.buzzer_pin = buzzer_pin
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.buzzer_pin, GPIO.OUT)

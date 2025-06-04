@@ -6,18 +6,18 @@ class Stats:
         self.stats = {
             "food": 60,
             "rest": 60,
-            "safe": 40,
+            "safe": 60,
             "social": 50,
             "esteem": 30,
             "education": 0,
-            "money": 10
+            "money": 18
         }
         self.last_update_time = time.time()
         self.decay_rates = {
-            "food": 1,
-            "safe": 1,
+            "food": 2,
+            "safe": 0,
             "rest": 1,
-            "social": 1
+            "social": 2
         }
         self.decay_interval = 10
         self.font_path = "assets/fonts/tamzen.ttf"

@@ -20,11 +20,14 @@ def handle_education_input(stats, states, controls, audio):
 
         # Select a suitcase to start the animation
         if controls.center_button:
-            audio.play_sound("suitcaseOpen")
             states.animation_frame = 0
-            selected = states.education_options[states.selected_point_index]
-            states.selected_level = selected["level"]
-            states.student_loan = selected["loan"]
+            education_options = {
+                2: {"level": "MSc", "loan": 50000}, # Suitcase 2
+                3: {"level": "PhD", "loan": 100000} # Suitcase 3
+            }
+            selected = education_options.get(states.selected_point_index, {})
+            states.selected_level = selected.get("level", "DropOut")
+            states.student_loan = selected.get("loan", random.choice([0, 1000, 2000]))
 
 
 

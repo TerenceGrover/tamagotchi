@@ -64,6 +64,11 @@ def handle_housing_input(housing_state, stats, controls, fps, states, audio):
     Only allow selecting a house if stats.money meets the threshold for that option.
     """
     current_threshold = HOUSE_MONEY_THRESHOLDS[housing_state["current_choice"]]
+
+    if controls.left_button:
+        states.transition_to_screen("home_screen")
+        audio.play_sound("click")
+        return
     
     if housing_state["pending"]:
         if controls.left_button or controls.center_button or controls.right_button:

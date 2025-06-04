@@ -13,11 +13,10 @@ RANDOM_EVENTS = [
         "no": lambda stats: None
     },
     {
-        "prompt": "invest in crypto?",
+        "prompt": "commit tax fraud?",
         "yes": lambda stats: (
-            stats.modify_stat("money", -30),
+            stats.modify_stat("money", 20),
             stats.modify_stat("safe", -30),
-            setattr(stats, "crypto_investment_time", time.time())
         ),
         "no": lambda stats: stats.modify_stat("safe", 5)
     },
@@ -119,14 +118,14 @@ class States:
         self.all_screens = {
             "egg": ["stats_screen"],
             "small": ["stats_screen", "education_screen" if self.selected_level is None else None, "food_screen", "socialize_screen", "hobby_screen"],
-            "adult": ["stats_screen", "education_screen" if self.selected_level is None else None, "food_screen", "socialize_screen", "hobby_screen", "job_screen" if self.selected_level else "", "housing_screen"],
+            "adult": ["stats_screen", "education_screen", "food_screen", "socialize_screen", "hobby_screen", "job_screen", "housing_screen"],
             "dead": ["end_screen"]
         }
 
         # Age-related properties
         self.age = 0
         self.start_time = time.time()
-        self.life_stages = {"egg": 0, "small":0 , "adult": 150, "dead" : 100000000}  # Age thresholds
+        self.life_stages = {"egg": 0, "small":50 , "adult": 350, "dead" : 100000000}  # Age thresholds
 
     def update_life_stage(self):
         """

@@ -15,6 +15,7 @@ from core.audioManager import AudioManager
 from utils.text_utils import text_to_matrix, split_text_to_lines
 import subprocess
 import RPi.GPIO as GPIO
+from core.controls import Controls
 
 # def init_controls_safely():
 #     subprocess.run(["/home/terence/tamagotchi/venv/bin/python3", "init_gpio_once.py"])
@@ -26,35 +27,42 @@ MATRIX_WIDTH = 64
 MATRIX_HEIGHT = 32
 FPS = 25
 BRIGHTNESS = 100
+INIT = False
 
 def main():
+    global INIT
+    if INIT == False:
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(21, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        print('init')
+        INIT = True
+
     # GPIO setup before matrix is even imported
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(20, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(21, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     # GPIO.setup(15, GPIO.OUT)
     print("GPIO initialized early")
 
-    from core.controls import Controls
+    print("Creating controls")
+    controls = Controls()
 
     # Set up the LED matrix options
     options = RGBMatrixOptions()
+    # Either omit this or explicitly set:
+    options.hardware_mapping = 'regular'
     options.rows = MATRIX_HEIGHT          # Physical rows on the LED panel
     options.brightness = BRIGHTNESS
     options.cols = MATRIX_WIDTH           # Physical columns on the LED panel
     options.chain_length = 1
     options.led_rgb_sequence = 'RBG'              # Adjust if you have multiple panels daisy-chained
     options.parallel = 1                  # Adjust for parallel chains if needed
-    # options.pixel_mapper_config = "Rotate:180"
+    options.pixel_mapper_config = "Rotate:180"
     # You can tweak additional options such as brightness, pwm_bits, etc., here
 
     time.sleep(0.5)
     matrix = RGBMatrix(options=options)
 
     # Initialize game modules – note Graphics now receives the matrix instance instead of a Pygame screen.
-    print("Creating controls")
-    controls = Controls()
     print("Controls initialized fine")
     # controls = DummyControls()
     print("Creating audio")
@@ -140,7 +148,7 @@ def main():
                 graphics.draw_button(no_matrix, MATRIX_WIDTH // 2 + 8, states.random_event["selection"] == "no", button_y)
 
             else:
-                if time.time() - states.random_event["cooldown_timer"] > random.randint(200, 400):
+                if time.time() - states.random_event["cooldown_timer"] > random.randint(50, 200):
                     event = random.choice(RANDOM_EVENTS)
                     states.random_event.update({
                         "active": True,

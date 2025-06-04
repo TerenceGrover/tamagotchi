@@ -33,7 +33,7 @@ def generate_platforms(num_platforms, screen_width, money_stat):
     """
     # Cap the number of platforms to fit within the screen
     max_platforms = screen_width // 10
-    num_platforms = min(round(num_platforms + money_stat // 20), max_platforms)
+    num_platforms = min(round(num_platforms + money_stat // 10), max_platforms)
 
     platforms = []
     for i in range(num_platforms):
