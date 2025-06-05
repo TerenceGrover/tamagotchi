@@ -8,14 +8,6 @@ from core.minigames.hobby import HIT_ZONE_Y, BEAT_POSITIONS, NOTE_WIDTH
 
 HOUSE_MONEY_THRESHOLDS = [10, 25, 50, 75]
 
-class DrawHelper:
-    def __init__(self, graphics):
-        self.graphics = graphics
-        self.drawer = ImageDraw.Draw(self.graphics.canvas)
-
-    def rectangle(self, coords, fill=None, pixel=None):
-        self.drawer.rectangle(coords, fill)
-
 class Graphics:
     def __init__(self, matrix, matrix_width, matrix_height, pixel_size):
         # 'matrix' is the LED matrix instance you use to push images (via SwapOnVSync or SetImage)
@@ -42,7 +34,6 @@ class Graphics:
         self.in_death_animation = False
         # Create a canvas image for drawing (width = matrix_width * pixel_size, etc.)
         self.canvas = Image.new("RGB", (matrix_width * pixel_size, matrix_height * pixel_size))
-        self.draw = DrawHelper(self)
 
     def render_to_matrix(self):
         """Push the canvas image to the LED matrix."""

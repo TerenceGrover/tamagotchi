@@ -4,7 +4,7 @@ import random
 from core.graphics import Graphics
 from core.states import States
 from core.stats import Stats
-from core.minigames.platformer import update_platforms, check_goal_reached, handle_input, draw_platformer, calculate_jump_curve
+from core.minigames.platformer import update_platforms, check_goal_reached, handle_input, calculate_jump_curve
 from core.minigames.education import handle_education_input, render_education_screen
 from core.minigames.social import handle_social_input, initialize_socializing
 from core.minigames.housing import initialize_housing, handle_housing_input, assign_real_estate_agent
@@ -50,6 +50,7 @@ def main():
         import pygame
         from pygamestuff.pygame_controls import Controls
         from pygamestuff.pygame_graphics import Graphics
+        from pygamestuff.pygame_platformer import draw_platformer
         from pygamestuff.pygame_audio import AudioManager
 
         matrix = None
@@ -64,8 +65,10 @@ def main():
 
     else:
         # not debug mode, game running on hardware, import hardware-specific libraries and initialize GPIO
-        from core.audioManager import AudioManager
         import RPi.GPIO as GPIO
+        from core.minigames.platformer import draw_platformer
+        from core.audioManager import AudioManager
+        from core.graphics import Graphics
         from core.controls import Controls
 
         global INIT

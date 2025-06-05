@@ -37,6 +37,41 @@ class Graphics:
         self.frame_width = int(matrix_width // 1.2)
         self.frame_height = int(matrix_height // 1.2)
         self.draw = DrawHelper(self)
+
+    def draw_button(self, label_matrix, x_pos, selected, button_y):
+        button_width = len(label_matrix[0])
+        button_height = len(label_matrix)
+        screen_y = button_y
+
+        bg_color = (255, 255, 255) if selected else (0, 0, 0)
+        text_color = (0, 0, 0) if selected else (255, 255, 255)
+
+        # Draw background rectangle
+        self.draw.rectangle(
+            bg_color,
+            (
+                x_pos * self.pixel_size,
+                screen_y * self.pixel_size,
+                button_width * self.pixel_size,
+                button_height * self.pixel_size
+            )
+        )
+
+        # Draw text over it pixel by pixel
+        for y, row in enumerate(label_matrix):
+            for x, pixel in enumerate(row):
+                # Accept pixel as either color tuple or a non-black marker
+                if pixel != (0, 0, 0) and pixel != (0, 0, 0, 0):  # transparent-safe
+                    self.draw.rectagle(
+                        text_color,
+                        (
+                            (x_pos + x) * self.pixel_size,
+                            (screen_y + y) * self.pixel_size,
+                            self.pixel_size,
+                            self.pixel_size
+                        )
+                    )
+
     
     def load_sprites(self, folder_path):
         sprites = []
