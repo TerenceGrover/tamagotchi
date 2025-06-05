@@ -12,11 +12,10 @@ class DrawHelper:
         self.graphics = graphics
 
     def rectangle(self, coords, fill):
-        print(f"Drawing rectangle with coords: {coords} and fill: {fill} + (pixel: {pixel})")
-        # if fill is white should be (255, 255, 255)
-        if fill == 'white':
-            fill = self.graphics.white
-        self.graphics.screen.fill(fill, coords)
+        x1, y1, x2, y2 = coords
+        width = x2 - x1 + 1
+        height = y2 - y1 + 1
+        self.graphics.screen.fill(fill, (x1, y1, width, height))
 
 class Graphics:
     def __init__(self, screen, matrix_width, matrix_height, pixel_size):
