@@ -6,13 +6,38 @@ from PIL import Image, ImageDraw, ImageEnhance
 import os
 from utils.text_utils import text_to_matrix, split_text_to_lines
 from core.minigames.hobby import HIT_ZONE_Y, BEAT_POSITIONS, NOTE_WIDTH
-# from utils.constants import (
-#     PYGAME, RASPBERRYPI
-# )
-PYGAME = 'pygame'
-RASPBERRYPI = 'raspberrypi'
+from utils.constants import (
+    PYGAME, RASPBERRYPI
+)
 
 HOUSE_MONEY_THRESHOLDS = [10, 25, 50, 75]
+
+class DrawPlatformHelper:
+    def __init__(self, graphics):
+        self.graphics = graphics
+
+    def rectangle(self, coords, fill):
+        # Initialize pygame if running in debug mode
+        if self.graphics.platform == PYGAME:
+            import pygame
+
+        x1 = coords[0]
+        y1 = coords[1]
+        x2 = coords[2]
+        y2 = coords[3]
+        platform_x = coords[0] / self.graphics.pixel_size
+        platform_y = coords[1] / self.graphics.pixel_size
+        platform_width = (coords[2] / self.graphics.pixel_size) - platform_x
+        pygame.draw.rect(
+            self.graphics.screen,
+            fill,
+            (
+                x1,
+                y1,
+                platform_width * self.graphics.pixel_size,
+                self.graphics.pixel_size
+            )
+        )
 
 class DrawHelper:
     def __init__(self, graphics):
@@ -55,6 +80,7 @@ class Graphics:
         self.canvas = Image.new("RGB", (matrix_width * pixel_size, matrix_height * pixel_size))
         # based on whether debug is true or false, use the appropriate drawing method
         self.draw = self.debug and DrawHelper(self) or ImageDraw.Draw(self.canvas)
+        self.drawplatform = self.debug and DrawPlatformHelper(self) or ImageDraw.Draw(self.canvas)
 
     def clear_screen(self):
         """Clear the screen by filling it with black."""
@@ -148,7 +174,10 @@ class Graphics:
             sprite_height (int): Height of the sprite in pixels.
             opacity (float): Opacity multiplier (1.0 = full opacity, 0.0 = fully dark).
         """
-        
+        # Initialize pygame if running in debug mode
+        if self.platform == PYGAME:
+            import pygame
+
         # Open the image with alpha channel
         img = Image.open(sprite_path).convert("RGBA")
         img = img.resize((sprite_width, sprite_height))
@@ -167,7 +196,14 @@ class Graphics:
                 if pixel != (0, 0, 0):  # Skip pure black pixels
                     screen_x = (x + col_idx) * self.pixel_size
                     screen_y = (y + row_idx) * self.pixel_size
-                    self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                    if self.platform == RASPBERRYPI:
+                        self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                    elif self.platform == PYGAME:
+                        pygame.draw.rect(
+                            self.screen,
+                            pixel,
+                            (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
+                        )
 
 
     def draw_frame_and_points(self, selected_point_index, states):
@@ -222,12 +258,23 @@ class Graphics:
 
 
     def draw_sprite(self):
+        # Initialize pygame if running in debug mode
+        if self.platform == PYGAME:
+            import pygame
+
         sprite_matrix = self.sprites[self.current_sprite_index]
         for y, row in enumerate(sprite_matrix):
             for x, pixel in enumerate(row):
                 screen_x = (self.position[0] + x) * self.pixel_size
                 screen_y = (self.position[1] + y) * self.pixel_size
-                self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                if self.platform == RASPBERRYPI:
+                    self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                elif self.platform == PYGAME:
+                    pygame.draw.rect(
+                        self.screen,
+                        pixel,
+                        (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
+                    )
 
     def draw_text_centered(self, text, font_path="assets/fonts/tamzen.ttf", font_size=10, color="white"):
         """

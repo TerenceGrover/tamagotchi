@@ -1,8 +1,6 @@
 import random
 import pygame
-# from utils.constants import RASPBERRY_PI
-PYGAME = 'pygame'
-RASPBERRYPI = 'raspberrypi'
+from utils.constants import RASPBERRYPI
 
 def initialize_platformer(money_stats):
     """
@@ -168,7 +166,7 @@ def draw_platformer(self, game_state, sprite_folder):
         y1 = platform_y * self.pixel_size
         x2 = (platform_x + platform_width) * self.pixel_size
         y2 = (platform_y + 1) * self.pixel_size  # 1 pixel tall
-        self.draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 255))
+        self.drawplatform.rectangle([x1, y1, x2, y2], fill=(255, 255, 255))
 
     # Draw the goal as a green square
     goal_x, goal_y = goal_position
@@ -176,7 +174,7 @@ def draw_platformer(self, game_state, sprite_folder):
     y1 = goal_y * self.pixel_size
     x2 = (goal_x + 1) * self.pixel_size
     y2 = (goal_y + 1) * self.pixel_size
-    self.draw.rectangle([x1, y1, x2, y2], fill=(0, 255, 0))
+    self.drawplatform.rectangle([x1, y1, x2, y2], fill=(0, 255, 0))
 
     # Draw the Tamagotchi sprite using the provided sprite image
     tama_x, tama_y = tama_position
@@ -186,5 +184,5 @@ def draw_platformer(self, game_state, sprite_folder):
     # (Optional) You can add other UI elements here if needed.
 
     # Finally, push the canvas to the LED matrix
-    if self.platform == RASPBERRY_PI:
+    if self.platform == RASPBERRYPI:
         self.render_to_matrix()
