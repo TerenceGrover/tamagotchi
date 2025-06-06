@@ -21,10 +21,6 @@ class DrawPlatformHelper:
         if self.graphics.platform == PYGAME:
             import pygame
 
-        x1 = coords[0]
-        y1 = coords[1]
-        x2 = coords[2]
-        y2 = coords[3]
         platform_x = coords[0] / self.graphics.pixel_size
         platform_y = coords[1] / self.graphics.pixel_size
         platform_width = (coords[2] / self.graphics.pixel_size) - platform_x
@@ -32,10 +28,10 @@ class DrawPlatformHelper:
             self.graphics.screen,
             fill,
             (
-                x1,
-                y1,
+                platform_x * self.graphics.pixel_size,
+                platform_y * self.graphics.pixel_size,
                 platform_width * self.graphics.pixel_size,
-                self.graphics.pixel_size
+                self.graphics.pixel_size,
             )
         )
 
