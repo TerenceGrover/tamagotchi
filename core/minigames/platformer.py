@@ -1,6 +1,8 @@
 import random
 import pygame
-from utils.constants import RASPBERRY_PI
+# from utils.constants import RASPBERRY_PI
+PYGAME = 'pygame'
+RASPBERRYPI = 'raspberrypi'
 
 def initialize_platformer(money_stats):
     """
