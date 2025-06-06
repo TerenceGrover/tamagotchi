@@ -44,9 +44,10 @@ class Stats:
             student_loan (int): The cost associated with the education.
         """
         self.stats["education"] = education_level
-        self.stats["money"] = max(-20, self.stats["money"] - student_loan / 1000)  # Deduct loan, ensuring non-negative money
-
-        print(self.stats['money'])
+        money = max(-20, self.stats["money"] - student_loan / 1000)  # Deduct loan, ensuring non-negative money
+        # Ensure money is integer
+        self.stats["money"] = int(money) if isinstance(money, float) else money
+        print('[Stats] Updating money to:', self.stats['money'])
 
     def render_stats_screen(self, graphics):
         stats_left_keys = ["food", "rest", "safe"]

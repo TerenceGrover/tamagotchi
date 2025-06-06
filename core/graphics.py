@@ -1,3 +1,4 @@
+import sys
 import time
 import math
 import random
@@ -5,13 +6,29 @@ from PIL import Image, ImageDraw, ImageEnhance
 import os
 from utils.text_utils import text_to_matrix, split_text_to_lines
 from core.minigames.hobby import HIT_ZONE_Y, BEAT_POSITIONS, NOTE_WIDTH
+from utils.constants import (
+    PYGAME, RASPBERRYPI
+)
 
 HOUSE_MONEY_THRESHOLDS = [10, 25, 50, 75]
 
+class DrawHelper:
+    def __init__(self, graphics):
+        self.graphics = graphics
+
+    def rectangle(self, coords, fill):
+        x1, y1, x2, y2 = coords
+        width = x2 - x1 + 1
+        height = y2 - y1 + 1
+        self.graphics.screen.fill(fill, (x1, y1, width, height))
+        
 class Graphics:
     def __init__(self, matrix, matrix_width, matrix_height, pixel_size):
         # 'matrix' is the LED matrix instance you use to push images (via SwapOnVSync or SetImage)
+        self.debug = any("debug=true" in arg.lower() for arg in sys.argv)
+        self.platform = PYGAME if self.debug else RASPBERRYPI
         self.matrix = matrix
+        self.screen = matrix
         self.matrix_width = matrix_width
         self.matrix_height = matrix_height
         self.pixel_size = pixel_size
@@ -34,6 +51,15 @@ class Graphics:
         self.in_death_animation = False
         # Create a canvas image for drawing (width = matrix_width * pixel_size, etc.)
         self.canvas = Image.new("RGB", (matrix_width * pixel_size, matrix_height * pixel_size))
+        # based on whether debug is true or false, use the appropriate drawing method
+        self.draw = self.debug and DrawHelper(self) or ImageDraw.Draw(self.canvas)
+
+    def clear_screen(self):
+        """Clear the screen by filling it with black."""
+        if self.platform == PYGAME:
+            self.screen.fill(self.black)
+        else:
+            self.draw.rectangle([0, 0, self.canvas.width, self.canvas.height], fill=self.black)
 
     def render_to_matrix(self):
         """Push the canvas image to the LED matrix."""
@@ -820,9 +846,3 @@ class Graphics:
 
     def end_animation_done(self):
         return time.time() - self.end_start_time > 6
-
-
-
-    def clear_screen(self):
-        """Clear the screen by filling it with black."""
-        self.draw.rectangle([0, 0, self.canvas.width, self.canvas.height], fill=self.black)
