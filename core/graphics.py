@@ -6,9 +6,11 @@ from PIL import Image, ImageDraw, ImageEnhance
 import os
 from utils.text_utils import text_to_matrix, split_text_to_lines
 from core.minigames.hobby import HIT_ZONE_Y, BEAT_POSITIONS, NOTE_WIDTH
-from utils.constants import (
-    PYGAME, RASPBERRYPI
-)
+# from utils.constants import (
+#     PYGAME, RASPBERRYPI
+# )
+PYGAME = 'pygame'
+RASPBERRYPI = 'raspberrypi'
 
 HOUSE_MONEY_THRESHOLDS = [10, 25, 50, 75]
 
