@@ -1,22 +1,26 @@
-import RPi.GPIO as GPIO
+import pygame
 import threading
-import time
+import numpy as np
 
 class AudioManager:
-    def __init__(self, buzzer_pin=2):
-        self.buzzer_pin = buzzer_pin
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.buzzer_pin, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.buzzer_pin, 440)
+    def __init__(self, sample_rate=44100):
+        self.sample_rate = sample_rate
         self.lock = threading.Lock()
+        pygame.mixer.init(frequency=sample_rate, size=-16, channels=1)
+    
+    def _generate_tone(self, frequency, duration=0.2, volume=0.5):
+        t = np.linspace(0, duration, int(self.sample_rate * duration), False)
+        wave = 0.5 * np.sin(2 * np.pi * frequency * t)
+        audio = (volume * wave * (2**15 - 1)).astype(np.int16)  # 16-bit audio
+        sound = pygame.sndarray.make_sound(audio)
+        return sound
 
     def _play_notes(self, frequencies, duration=0.2):
         with self.lock:
-            self.pwm.start(50)
             for freq in frequencies:
-                self.pwm.ChangeFrequency(freq)
-                time.sleep(duration)
-            self.pwm.stop()
+                sound = self._generate_tone(freq, duration)
+                sound.play()
+                pygame.time.delay(int(duration * 1000))  # delay in ms
 
     def play_sound(self, sound_type):
         sound_map = {
@@ -37,6 +41,8 @@ class AudioManager:
 
         if sound_type in sound_map:
             threading.Thread(target=self._play_notes, args=(sound_map[sound_type],)).start()
+        else:
+            print(f"Unknown sound type: {sound_type}")
 
     def cleanup(self):
-        GPIO.cleanup()
+        pygame.mixer.quit()
