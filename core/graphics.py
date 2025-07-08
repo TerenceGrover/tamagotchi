@@ -1,3 +1,4 @@
+import sys
 import time
 import math
 import random
@@ -5,13 +6,52 @@ from PIL import Image, ImageDraw, ImageEnhance
 import os
 from utils.text_utils import text_to_matrix, split_text_to_lines
 from core.minigames.hobby import HIT_ZONE_Y, BEAT_POSITIONS, NOTE_WIDTH
+from utils.constants import (
+    PYGAME, RASPBERRYPI
+)
 
 HOUSE_MONEY_THRESHOLDS = [10, 25, 50, 75]
 
+class DrawPlatformHelper:
+    def __init__(self, graphics):
+        self.graphics = graphics
+
+    def rectangle(self, coords, fill):
+        # Initialize pygame if running in debug mode
+        if self.graphics.platform == PYGAME:
+            import pygame
+
+        platform_x = coords[0] / self.graphics.pixel_size
+        platform_y = coords[1] / self.graphics.pixel_size
+        platform_width = (coords[2] / self.graphics.pixel_size) - platform_x
+        pygame.draw.rect(
+            self.graphics.screen,
+            fill,
+            (
+                platform_x * self.graphics.pixel_size,
+                platform_y * self.graphics.pixel_size,
+                platform_width * self.graphics.pixel_size,
+                self.graphics.pixel_size,
+            )
+        )
+
+class DrawHelper:
+    def __init__(self, graphics):
+        self.graphics = graphics
+
+    def rectangle(self, coords, fill):
+        x1, y1, x2, y2 = coords
+        width = x2 - x1 + 1
+        height = y2 - y1 + 1
+        self.graphics.screen.fill(fill, (x1, y1, width, height))
+        
 class Graphics:
     def __init__(self, matrix, matrix_width, matrix_height, pixel_size):
         # 'matrix' is the LED matrix instance you use to push images (via SwapOnVSync or SetImage)
+        self.debug = any("debug=true" in arg.lower() for arg in sys.argv)
+        self.platform = PYGAME if self.debug else RASPBERRYPI
         self.matrix = matrix
+        self.screen = matrix
         self.matrix_width = matrix_width
         self.matrix_height = matrix_height
         self.pixel_size = pixel_size
@@ -34,7 +74,16 @@ class Graphics:
         self.in_death_animation = False
         # Create a canvas image for drawing (width = matrix_width * pixel_size, etc.)
         self.canvas = Image.new("RGB", (matrix_width * pixel_size, matrix_height * pixel_size))
-        self.draw = ImageDraw.Draw(self.canvas)
+        # based on whether debug is true or false, use the appropriate drawing method
+        self.draw = self.debug and DrawHelper(self) or ImageDraw.Draw(self.canvas)
+        self.drawplatform = self.debug and DrawPlatformHelper(self) or ImageDraw.Draw(self.canvas)
+
+    def clear_screen(self):
+        """Clear the screen by filling it with black."""
+        if self.platform == PYGAME:
+            self.screen.fill(self.black)
+        else:
+            self.draw.rectangle([0, 0, self.canvas.width, self.canvas.height], fill=self.black)
 
     def render_to_matrix(self):
         """Push the canvas image to the LED matrix."""
@@ -121,7 +170,10 @@ class Graphics:
             sprite_height (int): Height of the sprite in pixels.
             opacity (float): Opacity multiplier (1.0 = full opacity, 0.0 = fully dark).
         """
-        
+        # Initialize pygame if running in debug mode
+        if self.platform == PYGAME:
+            import pygame
+
         # Open the image with alpha channel
         img = Image.open(sprite_path).convert("RGBA")
         img = img.resize((sprite_width, sprite_height))
@@ -140,7 +192,14 @@ class Graphics:
                 if pixel != (0, 0, 0):  # Skip pure black pixels
                     screen_x = (x + col_idx) * self.pixel_size
                     screen_y = (y + row_idx) * self.pixel_size
-                    self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                    if self.platform == RASPBERRYPI:
+                        self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                    elif self.platform == PYGAME:
+                        pygame.draw.rect(
+                            self.screen,
+                            pixel,
+                            (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
+                        )
 
 
     def draw_frame_and_points(self, selected_point_index, states):
@@ -195,12 +254,23 @@ class Graphics:
 
 
     def draw_sprite(self):
+        # Initialize pygame if running in debug mode
+        if self.platform == PYGAME:
+            import pygame
+
         sprite_matrix = self.sprites[self.current_sprite_index]
         for y, row in enumerate(sprite_matrix):
             for x, pixel in enumerate(row):
                 screen_x = (self.position[0] + x) * self.pixel_size
                 screen_y = (self.position[1] + y) * self.pixel_size
-                self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                if self.platform == RASPBERRYPI:
+                    self.draw_rect(screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1, fill=pixel)
+                elif self.platform == PYGAME:
+                    pygame.draw.rect(
+                        self.screen,
+                        pixel,
+                        (screen_x, screen_y, self.pixel_size - 1, self.pixel_size - 1),
+                    )
 
     def draw_text_centered(self, text, font_path="assets/fonts/tamzen.ttf", font_size=10, color="white"):
         """
@@ -821,9 +891,3 @@ class Graphics:
 
     def end_animation_done(self):
         return time.time() - self.end_start_time > 6
-
-
-
-    def clear_screen(self):
-        """Clear the screen by filling it with black."""
-        self.draw.rectangle([0, 0, self.canvas.width, self.canvas.height], fill=self.black)

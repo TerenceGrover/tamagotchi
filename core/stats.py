@@ -6,18 +6,18 @@ class Stats:
         self.stats = {
             "food": 60,
             "rest": 60,
-            "safe": 40,
+            "safe": 60,
             "social": 50,
             "esteem": 30,
             "education": 0,
-            "money": 10
+            "money": 18
         }
         self.last_update_time = time.time()
         self.decay_rates = {
-            "food": 1,
-            "safe": 1,
+            "food": 2,
+            "safe": 0,
             "rest": 1,
-            "social": 1
+            "social": 2
         }
         self.decay_interval = 10
         self.font_path = "assets/fonts/tamzen.ttf"
@@ -44,9 +44,10 @@ class Stats:
             student_loan (int): The cost associated with the education.
         """
         self.stats["education"] = education_level
-        self.stats["money"] = max(-20, self.stats["money"] - student_loan / 1000)  # Deduct loan, ensuring non-negative money
-
-        print(self.stats['money'])
+        money = max(-20, self.stats["money"] - student_loan / 1000)  # Deduct loan, ensuring non-negative money
+        # Ensure money is integer
+        self.stats["money"] = int(money) if isinstance(money, float) else money
+        print('[Stats] Updating money to:', self.stats['money'])
 
     def render_stats_screen(self, graphics):
         stats_left_keys = ["food", "rest", "safe"]

@@ -4,6 +4,7 @@ import time
 class Controls:
     def __init__(self):
         GPIO.cleanup()  # clear any previous pin state
+        print("Initializing GPIO for Controls...")
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
