@@ -8,9 +8,9 @@ class Controls:
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        self.left_pin = 20
-        self.right_pin = 21
-        self.center_pin = 26
+        self.left_pin = 14
+        self.center_pin = 15
+        self.right_pin = 25
 
         GPIO.setup(self.left_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.right_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)

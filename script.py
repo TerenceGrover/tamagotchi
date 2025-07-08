@@ -30,6 +30,7 @@ def get_matrix():
     options.led_rgb_sequence = 'RBG'    # Adjust if you have multiple panels daisy-chained
     options.parallel = 1                # Adjust for parallel chains if needed
     options.pixel_mapper_config = "Rotate:180"
+    options.hardware_mapping = "adafruit-hat"
 
     return RGBMatrix(options=options)
 
@@ -70,9 +71,9 @@ def main():
         global INIT
         if INIT == False:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.setup(21, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(14, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(25, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             print('init')
             INIT = True
         matrix = get_matrix()
