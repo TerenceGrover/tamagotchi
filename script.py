@@ -314,8 +314,8 @@ def main():
         else:
         # Instead of pygame.display.flip(), we swap the canvas on the LED matrix.
         # Here we assume your Graphics module manages a 'canvas' attribute for drawing.
-        graphics.render_to_matrix()
-        time.sleep(1.0 / FPS)
+            graphics.render_to_matrix()
+            time.sleep(1.0 / FPS)
     
     if debug: 
         pygame.quit()
