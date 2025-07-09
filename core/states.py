@@ -80,7 +80,6 @@ RANDOM_EVENTS = [
     }
 ]
 
-
 class States:
     def __init__(self):
         self.stage_of_life = "egg"  # Default stage
@@ -101,6 +100,7 @@ class States:
         ]
         self.platformer_state = None  # Holds platformer game state
         self.hobby_state = None  # Holds hobby game state
+        self.hobby_high_score = 0  # High score for hobby minigame
         self.job_state = None  # Holds job game state (to be implemented)
         self.random_event = {
             "active": False,
@@ -196,13 +196,21 @@ class States:
         """
         Initialize the hobby rhythm-based minigame.
         """
-        self.hobby_state = initialize_hobby()
+        self.hobby_state = initialize_hobby(self)
 
     def reset_hobby(self):
         """
         Reset the hobby minigame.
         """
         self.hobby_state = None
+
+    def update_hobby_high_score(self, score):
+        """
+        Update the high score for the hobby minigame.
+        """
+        if score > self.hobby_high_score:
+            self.hobby_high_score = score
+            print(f"New Hobby High Score: {self.hobby_high_score}")
 
     def start_job(self):
         """

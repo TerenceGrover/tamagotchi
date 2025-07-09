@@ -4,9 +4,9 @@ import time
 # --- Configuration based on education level ---
 EDUCATION_CONFIG = {
     "HS": {
-        "base_length": 4,
-        "max_rounds": 6,
-        "reward_multiplier": 1.0,
+        "base_length": 3,
+        "max_rounds": 5,
+        "reward_multiplier": 1.5,
         "items": [
             "assets/sprites/job/hs_item1.png",
             "assets/sprites/job/hs_item2.png",
@@ -15,9 +15,9 @@ EDUCATION_CONFIG = {
         
     },
     "BSc": {
-        "base_length": 5,
-        "max_rounds": 7,
-        "reward_multiplier": 1.5,
+        "base_length": 4,
+        "max_rounds": 6,
+        "reward_multiplier": 2.0,
         "items": [
             "assets/sprites/job/bsc_item1.png",
             "assets/sprites/job/bsc_item2.png",
@@ -25,9 +25,9 @@ EDUCATION_CONFIG = {
         ]
     },
     "MSc": {
-        "base_length": 6,
-        "max_rounds": 8,
-        "reward_multiplier": 2.0,
+        "base_length": 5,
+        "max_rounds": 7,
+        "reward_multiplier": 2.5,
         "items": [
             "assets/sprites/job/msc_item1.png",
             "assets/sprites/job/msc_item2.png",
@@ -35,9 +35,9 @@ EDUCATION_CONFIG = {
         ]
     },
     "PhD": {
-        "base_length": 7,
-        "max_rounds": 9,
-        "reward_multiplier": 2.5,
+        "base_length": 6,
+        "max_rounds": 8,
+        "reward_multiplier": 3.0,
         "items": [
             "assets/sprites/job/phd_item1.png",
             "assets/sprites/job/phd_item2.png",
@@ -47,10 +47,10 @@ EDUCATION_CONFIG = {
 }
 
 # Timing constants
-ITEM_DISPLAY_DURATION = 0.5  # seconds to show each item during sequence display
-FEEDBACK_DURATION = 2.0      # seconds for green (success) or red (fail) flash
+ITEM_DISPLAY_DURATION = 0.4  # seconds to show each item during sequence display
+FEEDBACK_DURATION = 1.5      # seconds for green (success) or red (fail) flash
 REST_DECREASE = 20            # decrease in rest after completing a job
-PRE_ANIMATION_DELAY = 0.5
+PRE_ANIMATION_DELAY = 0.3
 
 def generate_task_sequence(task_count):
     """Generate a random sequence of tasks (each a number: 0, 1, or 2)."""
@@ -80,6 +80,7 @@ def initialize_job(education_level):
         "task_count": base_length,
         "max_rounds": max_rounds,
         "completed": False,
+        "sound_played": False,
         "high_score": 0,
         "reward_multiplier": config.get("reward_multiplier", 1.0),
     }
@@ -153,37 +154,39 @@ def update_job(job_state, controls, audio):
                     job_state["phase_start_time"] = current_time
     # Phase: Feedback Success (flash green)
     elif job_state["phase"] == "feedback_success":
-        audio.play_sound("success")  # Play success sound
+        if not job_state.get("sound_played", False):
+            audio.play_sound("success")  # Play success sound only once
+            job_state["sound_played"] = True
         print(job_state['phase'])
-        # In your drawing routine, you can flash green when this phase is active.
         if current_time - job_state["phase_start_time"] >= FEEDBACK_DURATION:
             # Increase difficulty for next round
             job_state["current_round"] += 1
             job_state["task_count"] += 1
             if job_state["task_count"] >= job_state["max_rounds"]:
-                job_state["completed"] = True  # Workday finished
+                job_state["completed"] = True
             else:
-                # Generate a new sequence with increased length
                 job_state["sequence"] = generate_task_sequence(job_state["task_count"])
                 job_state["current_animation_index"] = 0
                 job_state["phase"] = "display"
                 job_state["phase_start_time"] = current_time
+            job_state["sound_played"] = False  # Reset for next feedback phase
 
-    # Phase: Feedback Failure (flash red)
+
     elif job_state["phase"] == "feedback_failure":
-        audio.play_sound("failure")  # Play failure sound
+        if not job_state.get("sound_played", False):
+            audio.play_sound("failure")  # Play failure sound only once
+            job_state["sound_played"] = True
         print(job_state['phase'])
-        # Flash red for FEEDBACK_DURATION seconds before resetting the sequence
         if current_time - job_state["phase_start_time"] >= FEEDBACK_DURATION:
             if job_state["mistake_count"] >= 3:
-                # Too many mistakes: end the job minigame
                 job_state["completed"] = True
             else:
-                # Replay the same sequence (reset input) after failure
                 job_state["input_sequence"] = []
                 job_state["phase"] = "display"
                 job_state["current_animation_index"] = 0
                 job_state["phase_start_time"] = current_time
+            job_state["sound_played"] = False  # Reset for next feedback phase
+
 
 def apply_job_rewards(job_state, stats):
     """

@@ -19,8 +19,8 @@ def initialize_socializing(graphics):
         "current_choice": 0,  # Start with the calculated color
         "animation_frames": 0,  # Tracks animation cycles
         "tama_animation_offset": 0,  # Up/down offset for Tamas
-        "player_displayed_chance": 100,
-        "other_displayed_chance": 10,
+        "player_displayed_chance": 95 + random.randint(-5, 5),  # Random chance for the player's displayed color
+        "other_displayed_chance": 50 + random.randint(-5, 5),  # Random chance for the other Tama's displayed color
     }
 
 def handle_social_input(states, social_state, controls, stats, audio):

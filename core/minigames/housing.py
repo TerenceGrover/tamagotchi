@@ -28,7 +28,7 @@ def initialize_housing():
         "pending": False,
         "pending_start_time": None,
         "current_home": None,
-        "pending_wait_time": random.randint(15, 30),
+        "pending_wait_time": random.randint(6, 12),
         "real_estate_agent": None,
     }
 

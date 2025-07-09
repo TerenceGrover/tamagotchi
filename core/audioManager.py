@@ -10,7 +10,7 @@ class AudioManager:
         self.pwm = GPIO.PWM(self.buzzer_pin, 440)
         self.lock = threading.Lock()
 
-    def _play_notes(self, frequencies, duration=0.2):
+    def _play_notes(self, frequencies, duration=0.15):
         with self.lock:
             self.pwm.start(50)
             for freq in frequencies:

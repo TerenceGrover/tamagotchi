@@ -20,7 +20,7 @@ class Controls:
         self.right_button = False
         self.center_button = False
 
-        self.debounce_interval = 0.4  # seconds
+        self.debounce_interval = 0.2  # seconds
         self.last_press_left = 0
         self.last_press_right = 0
         self.last_press_center = 0

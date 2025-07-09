@@ -143,6 +143,7 @@ def check_goal_reached(game_state, stats, audio):
         game_state["minigame_ended"] = True
         audio.play_sound("success")  # Play success sound
         stats.modify_stat("food", 20)  # Increase money stat
+        stats.modify_stat("safety", 5)  # Increase esteem stat
 
 
 def draw_platformer(self, game_state, sprite_folder):

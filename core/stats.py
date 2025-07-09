@@ -10,7 +10,7 @@ class Stats:
             "social": 50,
             "esteem": 30,
             "education": 0,
-            "money": 18
+            "money": 208
         }
         self.last_update_time = time.time()
         self.decay_rates = {

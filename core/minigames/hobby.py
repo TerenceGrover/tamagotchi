@@ -4,13 +4,13 @@ import random
 # Define the keys where beats will fall
 BEAT_POSITIONS = [24, 32, 40]  # Left, Center, Right - Centered at 32
 DROP_SPEED = 1  # Slower movement
-INITIAL_BEAT_INTERVAL = 0.8  # Base frequency for beats
-MIN_BEAT_INTERVAL = 0.3  # Minimum time between notes (prevents excessive difficulty)
+INITIAL_BEAT_INTERVAL = 0.75  # Base frequency for beats
+MIN_BEAT_INTERVAL = 0.25  # Minimum time between notes (prevents excessive difficulty)
 HIT_ZONE_Y = 28  # Y coordinate of hit zone
 NOTE_WIDTH = 4  # Notes are 3 pixels wide
 MATRIX_HEIGHT = 32  # Height of the matrix
 
-def initialize_hobby():
+def initialize_hobby(states):
     """
     Initializes the hobby minigame state.
     """
@@ -20,11 +20,11 @@ def initialize_hobby():
         "score": 0,
         "missed": 0,
         "game_over": False,
-        "high_score": 0,
+        "high_score": states.hobby_high_score,  # Use the stored high score
         "game_start_time": time.time(),  # 🔥 Track game duration
     }
 
-def update_hobby(hobby_state, controls, stats, audio):
+def update_hobby(hobby_state, controls, stats, audio, states):
     """
     Updates the rhythm game state and applies stat changes at the end.
     """
@@ -32,7 +32,7 @@ def update_hobby(hobby_state, controls, stats, audio):
     elapsed_time = current_time - hobby_state["game_start_time"]
 
     # 🔥 Reduce beat interval over time (more notes appear as game progresses)
-    beat_interval = max(INITIAL_BEAT_INTERVAL - (elapsed_time / 60), MIN_BEAT_INTERVAL)
+    beat_interval = max(INITIAL_BEAT_INTERVAL - (elapsed_time / 50), MIN_BEAT_INTERVAL)
 
     # Generate a new beat at regular intervals
     if current_time - hobby_state["last_beat_time"] >= beat_interval:
@@ -67,10 +67,10 @@ def update_hobby(hobby_state, controls, stats, audio):
     # End game if too many missed
     if hobby_state["missed"] >= 5:  # Increased leniency
         hobby_state["game_over"] = True
-        apply_hobby_rewards(hobby_state, stats, audio)  # Apply stats after game over
+        apply_hobby_rewards(hobby_state, stats, audio, states)  # Apply stats after game over
 
 
-def apply_hobby_rewards(hobby_state, stats, audio):
+def apply_hobby_rewards(hobby_state, stats, audio, states):
     """
     Adjusts player stats based on their performance in the hobby mini-game.
     """
@@ -79,6 +79,7 @@ def apply_hobby_rewards(hobby_state, stats, audio):
     # 🔥 **Update high score before calculating performance**
     if current_score > hobby_state["high_score"]:
         hobby_state["high_score"] = current_score
+        states.update_hobby_high_score(current_score)  # Update the high score in states
 
     high_score = hobby_state["high_score"]
     
@@ -105,7 +106,7 @@ def apply_hobby_rewards(hobby_state, stats, audio):
         stats.modify_stat("esteem", 10)
         audio.play_sound("success")
     else:  # New high score!
-        stats.modify_stat("rest", 40)
+        stats.modify_stat("rest", 30)
         stats.modify_stat("esteem", 20)
         audio.play_sound("success")
 

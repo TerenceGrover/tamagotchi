@@ -20,7 +20,7 @@ class AudioManager:
             for freq in frequencies:
                 sound = self._generate_tone(freq, duration)
                 sound.play()
-                pygame.time.delay(int(duration * 1000))  # delay in ms
+                pygame.time.delay(int(duration * 700))  # delay in ms
 
     def play_sound(self, sound_type):
         sound_map = {

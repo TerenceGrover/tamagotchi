@@ -499,25 +499,33 @@ class Graphics:
         )
 
         # Draw feedback sprites
-        if social_state["player_feedback_sprite"]:
-            feedback_index = (social_state["animation_frames"] // 10) % len(social_state["player_feedback_sprite"])
+        if social_state["player_feedback_sprite"] and social_state["other_feedback_sprite"]:
+            player_feedback_index = (social_state["animation_frames"] // 10) % len(social_state["player_feedback_sprite"])
             self.draw_sprite_at(
                 player_tama_x - 3,
                 player_tama_y - 3,
-                social_state["player_feedback_sprite"][feedback_index],
+                social_state["player_feedback_sprite"][player_feedback_index],
+                sprite_width=6,
+                sprite_height=6
+            )
+            other_feedback_index = (social_state["animation_frames"] // 10) % len(social_state["other_feedback_sprite"])
+            self.draw_sprite_at(
+                other_tama_x + 3,
+                other_tama_y - 3,
+                social_state["other_feedback_sprite"][other_feedback_index],
                 sprite_width=6,
                 sprite_height=6
             )
 
-        if social_state["other_feedback_sprite"]:
-            feedback_index = (social_state["animation_frames"] // 10) % len(social_state["other_feedback_sprite"])
-            self.draw_sprite_at(
-                other_tama_x + 3,
-                other_tama_y - 3,
-                social_state["other_feedback_sprite"][feedback_index],
-                sprite_width=6,
-                sprite_height=6
-            )
+        # if social_state["other_feedback_sprite"]:
+        #     feedback_index = (social_state["animation_frames"] // 10) % len(social_state["other_feedback_sprite"])
+        #     self.draw_sprite_at(
+        #         other_tama_x + 3,
+        #         other_tama_y - 3,
+        #         social_state["other_feedback_sprite"][feedback_index],
+        #         sprite_width=6,
+        #         sprite_height=6
+        #     )
 
         if not social_state["interaction_done"]:
             # Use the wiggled percentage values
@@ -872,9 +880,9 @@ class Graphics:
     def draw_death_safe(self, elapsed, sprite_path):
         self.draw_sprite_at(30, 10, sprite_path)
         if elapsed > 1:
-            self.draw_sprite_at(34, 10, "assets/sprites/fx/gun.png")
+            self.draw_sprite_at(42, 10, "assets/sprites/fx/gun.png")
         if elapsed > 1:
-            self.draw_sprite_at(50, 10, "assets/sprites/fx/bullet_hit.png")
+            self.draw_sprite_at(34, 10, "assets/sprites/fx/bullet_hit.png")
         if elapsed > 3:
             self.clear_screen()
             self.draw_text_centered("YOU DIED")
