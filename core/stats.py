@@ -9,7 +9,7 @@ class Stats:
             "safe": 60,
             "social": 50,
             "esteem": 30,
-            "education": 0,
+            "education": "MSc",
             "money": 208
         }
         self.last_update_time = time.time()

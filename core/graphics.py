@@ -676,8 +676,16 @@ class Graphics:
             )
 
         # Draw falling beats.
+        # hobby_state["beats"].append({"x": x_position, "y": 0, "hit": False}) 
+        # BEAT_POSITIONS = [24, 32, 40]
+        beat_color = {
+            24: (255, 0, 0),  # Left
+            32: (0, 255, 0),  # Center
+            40: (0, 0, 255)   # Right
+        }
         for beat in hobby_state["beats"]:
-            color = (0, 255, 0) if beat["hit"] else (255, 0, 0)
+            # color = (0, 255, 0) if beat["hit"] else (255, 0, 0)
+            color = beat_color.get(beat["x"], (255, 255, 0)) if not beat["hit"] else (0, 255, 255)
             self.draw_rect(
                 beat["x"] * self.pixel_size,
                 beat["y"] * self.pixel_size,
