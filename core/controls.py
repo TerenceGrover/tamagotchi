@@ -13,8 +13,9 @@ class Controls:
         self.right_pin = 25
 
         GPIO.setup(self.left_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.center_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(self.right_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.center_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 
         self.left_button = False
         self.right_button = False
