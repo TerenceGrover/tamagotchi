@@ -5,19 +5,20 @@ class Stats:
     def __init__(self):
         self.stats = {
             "food": 60,
-            "rest": 60,
-            "safe": 60,
-            "social": 50,
+            "rest": 30,
+            "safe": 55,
+            "social": 40,
             "esteem": 30,
             "education": "MSc",
-            "money": 208
+            "money": 12
         }
         self.last_update_time = time.time()
         self.decay_rates = {
             "food": 2,
             "safe": 0,
-            "rest": 1,
-            "social": 2
+            "rest": 2,
+            "social": 1,
+            "esteem": 0,
         }
         self.decay_interval = 10
         self.font_path = "assets/fonts/tamzen.ttf"

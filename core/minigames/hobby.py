@@ -5,7 +5,7 @@ import random
 BEAT_POSITIONS = [24, 32, 40]  # Left, Center, Right - Centered at 32
 DROP_SPEED = 1  # Slower movement
 INITIAL_BEAT_INTERVAL = 0.75  # Base frequency for beats
-MIN_BEAT_INTERVAL = 0.25  # Minimum time between notes (prevents excessive difficulty)
+MIN_BEAT_INTERVAL = 0.23  # Minimum time between notes (prevents excessive difficulty)
 HIT_ZONE_Y = 28  # Y coordinate of hit zone
 NOTE_WIDTH = 4  # Notes are 3 pixels wide
 MATRIX_HEIGHT = 32  # Height of the matrix
@@ -89,25 +89,35 @@ def apply_hobby_rewards(hobby_state, stats, audio, states):
     else:
         performance = (current_score / high_score) * 100
 
-    # Apply stat changes based on performance
-    if performance < 25:  # Bad performance
-        stats.modify_stat("rest", 5)
-        stats.modify_stat("esteem", -2)
-        audio.play_sound("failure")
-    elif 25 <= performance < 50:  # Neutral
-        stats.modify_stat("rest", 10)
-        audio.play_sound("failure")
-    elif 50 <= performance < 75:  # Good
-        stats.modify_stat("rest", 15)
-        stats.modify_stat("esteem", 5)
+    if current_score > 100:
+        stats.modify_stat("esteem", 60)
+        stats.modify_stat("rest", 60)
         audio.play_sound("success")
-    elif 75 <= performance < 100:  # Great
-        stats.modify_stat("rest", 20)
-        stats.modify_stat("esteem", 10)
-        audio.play_sound("success")
-    else:  # New high score!
-        stats.modify_stat("rest", 30)
-        stats.modify_stat("esteem", 20)
-        audio.play_sound("success")
+
+    elif current_score > 10:
+
+        if performance < 25:  # Bad performance
+            stats.modify_stat("rest", 5)
+            stats.modify_stat("esteem", -5)
+            audio.play_sound("failure")
+        elif 25 <= performance < 50:  # Neutral
+            stats.modify_stat("rest", 10)
+            audio.play_sound("failure")
+        elif 50 <= performance < 75:  # Good
+            stats.modify_stat("rest", 15)
+            stats.modify_stat("esteem", 5)
+            audio.play_sound("success")
+        elif 75 <= performance < 100:  # Great
+            stats.modify_stat("rest", 20)
+            stats.modify_stat("esteem", 10)
+            audio.play_sound("success")
+        else:  # New high score!
+            stats.modify_stat("rest", 30)
+            stats.modify_stat("esteem", 20)
+            audio.play_sound("success")
+    
+    else:
+        stats.modify_stat("rest", 0)
+        stats.modify_stat("esteem", -10)
 
     print(f"🎵 Hobby Complete! Score: {current_score}, High Score: {high_score}")
