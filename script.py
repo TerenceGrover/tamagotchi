@@ -71,9 +71,9 @@ def main():
         global INIT
         if INIT == False:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(14, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            GPIO.setup(25, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            GPIO.setup(14, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(25, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             print('init')
             INIT = True
         matrix = get_matrix()
