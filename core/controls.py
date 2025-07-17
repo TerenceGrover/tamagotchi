@@ -34,13 +34,13 @@ class Controls:
         right_state = GPIO.input(self.right_pin)
         center_state = GPIO.input(self.center_pin)
 
-        print(f"RAW STATES: LEFT={left_state}, RIGHT={right_state}, CENTER={center_state}")
+        # print(f"RAW STATES: LEFT={left_state}, RIGHT={right_state}, CENTER={center_state}")
 
         # LEFT
         if left_state == GPIO.LOW and (now - self.last_press_left > self.debounce_interval):
             self.left_button = True
             self.last_press_left = now
-            # print(self.left_pin + " pressed")
+            print(self.left_pin + " pressed")
         else:
             self.left_button = False
 
@@ -48,7 +48,7 @@ class Controls:
         if right_state == GPIO.LOW and (now - self.last_press_right > self.debounce_interval):
             self.right_button = True
             self.last_press_right = now
-            # print(self.right_pin + " pressed")
+            print(self.right_pin + " pressed")
         else:
             self.right_button = False
 
@@ -56,6 +56,6 @@ class Controls:
         if center_state == GPIO.LOW and (now - self.last_press_center > self.debounce_interval):
             self.center_button = True
             self.last_press_center = now
-            # print(self.right_pin + " pressed")
+            print(self.right_pin + " pressed")
         else:
             self.center_button = False
