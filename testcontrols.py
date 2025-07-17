@@ -13,6 +13,8 @@ PIN_NAMES = {
     11: "GPIO11 (SCLK)",
     8: "GPIO8 (CE0)",
     7: "GPIO7 (CE1)",
+    19: "GPIO19 (old center Button)",
+    24: "GPIO24 (old left Button)",
 }
 
 GPIO.setmode(GPIO.BCM)
