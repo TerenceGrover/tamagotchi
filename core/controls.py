@@ -35,6 +35,8 @@ class Controls:
         center_state = GPIO.input(self.center_pin)
 
         # print(f"RAW STATES: LEFT={left_state}, RIGHT={right_state}, CENTER={center_state}")
+        print(f"RAW STATES: LEFT={GPIO.input(24)}, CENTER={GPIO.input(19)}, RIGHT={GPIO.input(25)}")
+    
 
         # LEFT
         if left_state == GPIO.LOW and (now - self.last_press_left > self.debounce_interval):
