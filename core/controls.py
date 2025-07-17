@@ -8,7 +8,7 @@ class Controls:
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        self.left_pin = 7
+        self.left_pin = 14
         self.center_pin = 8
         self.right_pin = 25
 
