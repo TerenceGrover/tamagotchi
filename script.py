@@ -71,8 +71,8 @@ def main():
         global INIT
         if INIT == False:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(8, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.setup(7, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(19, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             GPIO.setup(25, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             print('init')
             INIT = True
