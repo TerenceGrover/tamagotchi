@@ -29,7 +29,7 @@ def get_matrix():
     options.chain_length = 1
     options.led_rgb_sequence = 'RBG'    # Adjust if you have multiple panels daisy-chained
     options.parallel = 1                # Adjust for parallel chains if needed
-    options.pixel_mapper_config = "Rotate:180"
+    # options.pixel_mapper_config = "Rotate:180"
     options.hardware_mapping = "adafruit-hat"
 
     return RGBMatrix(options=options)
