@@ -1,7 +1,8 @@
 import RPi.GPIO as GPIO
 import time
 
-SAFE_PINS = [2, 3, 14, 15, 25, 9, 10, 11, 8, 7, 19, 24]  # All safe GPIOs (see notes below)
+# SAFE_PINS = [2, 3, 14, 15, 25, 9, 10, 11, 8, 7, 19, 24]  # All safe GPIOs (see notes below)
+SAFE_PINS = [14, 15, 25]  # All safe GPIOs (see notes below)
 PIN_NAMES = {
     2: "GPIO2 (SDA)",
     3: "GPIO3 (SCL)",
