@@ -22,7 +22,7 @@ GPIO.setwarnings(False)
 
 # Setup pins
 for pin in SAFE_PINS:
-    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(pin, GPIO.IN)
 
 try:
     print("Press buttons (CTRL+C to stop):")
