@@ -39,12 +39,13 @@ PIXEL_SIZE = 20
 MATRIX_WIDTH = 64
 MATRIX_HEIGHT = 32
 FPS = 25
-BRIGHTNESS = 15
+BRIGHTNESS = 45
 INIT = False
 
 def main():
     # usage: python3 script.py debug=true
     debug = any("debug=true" in arg.lower() for arg in sys.argv)
+    fake = any("fake=true" in arg.lower() for arg in sys.argv)
 
     if debug:
         # debug mode, will play on pygame window, no hardware imports
@@ -66,7 +67,10 @@ def main():
         # not debug mode, game running on hardware, import hardware-specific libraries and initialize GPIO
         import RPi.GPIO as GPIO
         from core.audioManager import AudioManager
-        from core.controls import Controls
+        if fake:
+            from core.fakecontrols import FakeControls as Controls
+        else:
+            from core.controls import Controls
 
         global INIT
         if INIT == False:
