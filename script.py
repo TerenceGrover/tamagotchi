@@ -130,7 +130,7 @@ def main():
             audio.play_sound("gameLose")
             states.transition_to_life_stage("dead")
             graphics.update_sprites(states)
-            continue
+            return "dead" 
 
         # Render based on the current screen/state
         if states.current_screen == "home_screen":
@@ -323,6 +323,15 @@ def main():
     
     if debug: 
         pygame.quit()
+    
+    return states.stage_of_life
 
 if __name__ == "__main__":
-    main()
+    while True:
+        result = main()
+        if result == "dead":
+            print("Player died, restarting game...")
+            time.sleep(10)  # Optional delay before restart
+            continue  # Restart game
+        else:
+            break  # Exit loop if needed
