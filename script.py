@@ -321,10 +321,11 @@ def main():
             graphics.render_to_matrix()
             time.sleep(1.0 / FPS)
     
+        return states.stage_of_life
+    
     if debug: 
         pygame.quit()
     
-    return states.stage_of_life
 
 if __name__ == "__main__":
     while True:
