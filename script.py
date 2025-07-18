@@ -121,7 +121,7 @@ def main():
             states.transition_to_life_stage("dead")
             graphics.start_end_animation('win', None, states.get_sprite_folder())
             audio.play_sound("gameWin")
-            continue
+            return "dead"
 
         death_cause = stats.check_lose_condition()
         if death_cause and states.stage_of_life != "dead":
@@ -130,7 +130,7 @@ def main():
             audio.play_sound("gameLose")
             states.transition_to_life_stage("dead")
             graphics.update_sprites(states)
-            return "dead" 
+            return "dead"
 
         # Render based on the current screen/state
         if states.current_screen == "home_screen":
@@ -329,6 +329,7 @@ def main():
 if __name__ == "__main__":
     while True:
         result = main()
+        print(result)
         if result == "dead":
             print("Player died, restarting game...")
             time.sleep(10)  # Optional delay before restart
