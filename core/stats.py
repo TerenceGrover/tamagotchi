@@ -4,7 +4,7 @@ from utils.text_utils import text_to_matrix, draw_money_signal
 class Stats:
     def __init__(self):
         self.stats = {
-            "food": 1,
+            "food": 60,
             "rest": 30,
             "safe": 55,
             "social": 40,
