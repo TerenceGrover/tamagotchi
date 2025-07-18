@@ -320,8 +320,6 @@ def main():
             graphics.render_to_matrix()
             time.sleep(1.0 / FPS)
     
-        return 0
-    
     if debug: 
         pygame.quit()
     
